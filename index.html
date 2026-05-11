@@ -3,182 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Machine Dashboard</title>
+    <title>Fixed Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* บังคับเต็มจอและห้ามเลื่อน */
+        /* บังคับห้ามเลื่อนหน้าจอเด็ดขาด */
         html, body { 
             height: 100vh; 
             margin: 0; 
+            padding: 0;
             overflow: hidden; 
             background-color: #0f172a; 
             color: #f8fafc; 
         }
-        
-        /* การ์ดแบบ Fix สัดส่วน */
+
+        /* โครงสร้างหลักแบบ Grid 2x2 */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* แบ่งซ้าย-ขวาเท่ากัน */
+            grid-template-rows: 1fr 1fr;    /* แบ่งบน-ล่างเท่ากัน */
+            gap: 1rem;
+            height: calc(100vh - 5rem);    /* หัก Header */
+            padding: 0 1rem 1rem 1rem;
+        }
+
+        /* กล่องการ์ดทุกใบจะมีสัดส่วนคงที่ */
         .card { 
             background-color: #1e293b; 
             border: 1px solid #334155; 
             border-radius: 0.75rem; 
             position: relative; 
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 1rem;
+            align-items: center;
+            min-height: 0; /* สำคัญ: ป้องกันการขยายตัวล้น Grid */
+            width: 100%;
+            height: 100%;
         }
 
-        /* ปรับ Grid ให้แถวบน (1,2) และแถวล่าง (3,4,5) มีความสูงเท่ากัน */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr; /* ปรับเป็น 1fr 1fr เพื่อให้ขนาดเท่ากัน */
-            gap: 1rem;
-            height: calc(100vh - 5rem); /* หักลบความสูง Header */
+        /* บังคับรูปให้อยู่ในกรอบ และกึ่งกลางเสมอ */
+        .machine-img {
+            max-width: 90%;
+            max-height: 80%;
+            object-contain: contain;
         }
 
         .label-tag {
             position: absolute;
-            top: 0.5rem;
+            top: 0.75rem;
             left: 0.75rem;
             font-size: 0.7rem;
             color: #64748b;
             font-weight: bold;
-            text-transform: uppercase;
+            z-index: 10;
         }
     </style>
 </head>
-<body class="p-4 font-sans flex flex-col">
-    <header class="flex justify-between items-center mb-4 h-10 flex-shrink-0">
-        <h1 class="text-2xl font-bold text-blue-400 tracking-wider">MACHINE MONITORING SYSTEM</h1>
+<body class="flex flex-col">
+
+    <header class="flex justify-between items-center h-16 px-6 flex-shrink-0">
+        <h1 class="text-xl font-bold text-blue-400 tracking-tighter uppercase">Machine Monitoring</h1>
         <div id="clock" class="text-lg font-mono text-slate-400">Loading...</div>
     </header>
 
-    <div class="grid-container">
+    <main class="dashboard-container">
+        
         <div class="card">
             <span class="label-tag">① MACHINE INLET</span>
-            <img src="in.png" alt="Inlet" class="max-h-[90%] w-auto object-contain">
+            <img src="in.png" alt=" " class="machine-img">
         </div>
 
         <div class="card">
             <span class="label-tag">② MACHINE OUTLET</span>
-            <img src="out.png" alt="Outlet" class="max-h-[90%] w-auto object-contain">
+            <img src="out.png" alt=" " class="machine-img">
         </div>
 
-        <div class="grid grid-rows-2 gap-4">
-            <div class="card !flex-row">
+        <div class="grid grid-rows-2 gap-4 h-100">
+            <div class="card !flex-row px-4">
                 <span class="label-tag">③ STATUS RATIO</span>
-                <div class="w-1/2 h-full flex items-center justify-center">
+                <div class="w-1/2 h-full py-6">
                     <canvas id="pieChart"></canvas>
                 </div>
-                <div class="w-1/2 pl-4 flex flex-col justify-center">
-                    <div class="text-xs text-slate-400">Efficiency:</div>
-                    <div id="eff-val" class="text-2xl font-bold text-green-400">--%</div>
-                    <div class="text-[10px] text-slate-500 mt-2">Downtime: 0 min</div>
+                <div class="w-1/2 flex flex-col justify-center pl-4 border-l border-slate-700/50">
+                    <div class="text-xs text-slate-500">Efficiency</div>
+                    <div id="eff-val" class="text-3xl font-black text-green-400">--%</div>
+                    <div class="text-[10px] text-red-500 mt-2">Downtime: 0 min</div>
                 </div>
             </div>
-            <div class="card">
-                <span class="label-tag">④ PRODUCTION LINE CHART</span>
-                <div class="w-full h-full pt-4">
+
+            <div class="card p-2">
+                <span class="label-tag">④ PRODUCTION CHART</span>
+                <div class="w-full h-full pt-6">
                     <canvas id="lineChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="card !justify-start p-6">
-            <span class="label-tag">⑤ DATA SUMMARY (GOOGLE SHEETS)</span>
-            <div class="w-full mt-4 overflow-hidden">
+        <div class="card !justify-start p-6 overflow-hidden">
+            <span class="label-tag">⑤ GOOGLE SHEETS DATA</span>
+            <div class="w-full mt-6">
                 <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b border-slate-700 text-blue-300 text-xs">
+                    <thead class="text-[10px] text-blue-300 uppercase border-b border-slate-700">
+                        <tr>
                             <th class="pb-2">Machine</th>
-                            <th class="pb-2 text-center">Temp (°C)</th>
-                            <th class="pb-2 text-center">Pressure (Bar)</th>
+                            <th class="pb-2 text-center">Temp</th>
+                            <th class="pb-2 text-center">Pressure</th>
                             <th class="pb-2 text-right">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="data-table" class="text-sm font-medium">
+                    <tbody id="data-table" class="text-sm">
                         </tbody>
                 </table>
             </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
 
-        // Clock Function
+        // Clock
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleString('th-TH');
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }, 1000);
 
         // Pie Chart
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'doughnut',
-            data: {
-                datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
-            },
-            options: { plugins: { legend: { display: false } }, cutout: '75%' }
+            data: { datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
         });
 
         // Line Chart
         const lineChart = new Chart(document.getElementById('lineChart'), {
             type: 'line',
             data: {
-                labels: ['08:00', '10:00', '12:00', '14:00', '16:00'],
-                datasets: [{ 
-                    data: [15, 22, 18, 30, 25], 
-                    borderColor: '#3b82f6', 
-                    borderWidth: 2, 
-                    pointRadius: 0, 
-                    fill: true, 
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                    tension: 0.4 
-                }]
+                labels: ['1','2','3','4','5'],
+                datasets: [{ data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, pointRadius: 0 }]
             },
-            options: { 
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }, 
-                scales: { 
-                    y: { display: false }, 
-                    x: { grid: { display: false }, ticks: { display: false } } 
-                } 
-            }
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
         });
 
-        // Fetch Data from Sheet
+        // Fetch Data
         async function fetchData() {
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-                
                 let html = "";
                 data.table.forEach(item => {
-                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
+                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400 border-amber-400';
                     html += `
                     <tr class="border-b border-slate-800/50">
-                        <td class="py-3 text-slate-300 font-bold">${item.machine}</td>
-                        <td class="py-3 text-xl text-center text-blue-400 font-bold">${item.temp}</td>
-                        <td class="py-3 text-xl text-center text-emerald-400 font-bold">${item.pressure}</td>
-                        <td class="py-3 text-right">
-                            <span class="text-[10px] font-black ${statusColor} border border-current px-2 py-0.5 rounded italic">
-                                ${item.status}
-                            </span>
+                        <td class="py-4 font-bold text-slate-400">${item.machine}</td>
+                        <td class="py-4 text-2xl text-center text-blue-400 font-black">${item.temp}</td>
+                        <td class="py-4 text-2xl text-center text-emerald-400 font-black">${item.pressure}</td>
+                        <td class="py-4 text-right">
+                            <span class="text-[10px] border px-2 py-0.5 rounded font-bold ${statusColor}">${item.status}</span>
                         </td>
                     </tr>`;
                 });
                 document.getElementById('data-table').innerHTML = html;
                 document.getElementById('eff-val').innerText = data.machine1.temp + "%";
-            } catch (e) {
-                console.error("Fetch Error:", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         fetchData();
-        setInterval(fetchData, 15000);
+        setInterval(fetchData, 10000);
     </script>
 </body>
 </html>
