@@ -1,0 +1,87 @@
+</span>
+        <span id="pressure2">0 bar</span>
+      </div>
+
+      <div class="info-box">
+        <span class="label">Status</span>
+        <span id="status2" class="running">RUNNING</span>
+      </div>
+    </div>
+  </div><!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- SECTION 1 -->
+  <div class="card machine-card">
+    <div class="title">SJ1</div>
+    <img src="IN.png" class="machine-img">
+
+    <div class="machine-info">
+      <div class="info-box">
+        <span class="label">Temperature</span>
+        <span id="temp1">0°C</span>
+      </div>
+
+      <div class="info-box">
+        <span class="label">Pressure</span>
+        <span id="pressure1">0 bar</span>
+      </div>
+
+      <div class="info-box">
+        <span class="label">Status</span>
+        <span id="status1" class="running">RUNNING</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SECTION 2 -->
+  <div class="card machine-card">
+    <div class="title">SJ2</div>
+    <img src="OUT.png" class="machine-img">
+
+    <div class="machine-info">
+      <div class="info-box">
+        <span class="label">Temperature</span>
+        <span id="temp2">0°C</span>
+      </div>
+
+      <div class="info-box">
+        <span class="label">Pressure
+
+
+  <!-- SECTION 3 -->
+  <div class="card chart-card">
+    <div class="title">Production Overview</div>
+    <canvas id="pieChart"></canvas>
+  </div>
+
+
+  <!-- SECTION 4 -->
+  <div class="card chart-card">
+    <div class="title">Temperature Trend</div>
+    <canvas id="lineChart"></canvas>
+  </div>
+
+
+  <!-- SECTION 5 -->
+  <div class="card table-card">
+    <div class="title">Machine Data</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Machine</th>
+          <th>Temp</th>
+</html>
