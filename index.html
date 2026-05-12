@@ -10,7 +10,253 @@
         /* ============================================================
            [ จุดแก้ไขหลัก ] สำหรับปรับขนาด X และ Y ของแต่ละส่วน
            ============================================================ */
-        
+        <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Machine Dashboard - Independent Scaling</title>
+    <!-- เรียกใช้งาน Tailwind CSS และ Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ============================================================
+           [ จุดแก้ไขหลัก ] สำหรับปรับขนาด X และ Y ของแต่ละส่วน
+           ============================================================ */
+        
+        :root {
+            /* 1. ปรับแนว X (ความกว้างคอลัมน์): สัดส่วนรวมคือผลรวมของทั้ง 3 ค่า */
+            /* หากต้องการให้กลุ่มขวากว้างขึ้น ให้เพิ่มค่า --width-col-right */
+            --width-col-left: 0.6fr;   /* ขนาด X ของ DATA */
+            --width-col-center: 1.0fr; /* ขนาด X ของกลุ่มเครื่องจักรกลาง */
+            --width-col-right: 0.6fr;  /* ขนาด X ของกลุ่มกราฟขวา */
+
+            /* 2. ปรับแนว Y (ความสูง Card กลาง): ปรับเลขเพื่อยืด/หด แต่ละรูปอิสระ */
+            --height-cen-view: 0.6fr;    /* ความสูง Y ของ Center View */
+            --height-machine-1: 0.8fr;   /* ความสูง Y ของ Machine Inlet */
+            --height-machine-2: 0.8fr; /* ความสูง Y ของ Machine Outlet */
+
+            /* 3. ปรับแนว Y (ความสูง Card ขวา): */
+            --height-chart-top: 1fr;    /* ความสูง Y ของ Status Ratio */
+            --height-chart-bottom: 1fr; /* ความสูง Y ของ Production */
+        }
+
+        /* ============================================================ */
+
+        html, body { 
+            height: 100vh; 
+            margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #000000; 
+            color: #f8fafc; 
+        }
+
+        /* [โครงสร้างหลัก] ใช้ค่าตัวแปรจาก :root */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
+            gap: 1rem;
+            height: calc(100vh - 4.5rem);
+            padding: 0 1rem 1rem 1rem;
+        }
+
+        /* [แผงกลาง] ปรับความสูง Y แยกกันตามตัวแปร */
+        .center-panel {
+            display: grid;
+            grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
+            gap: 1rem;
+            min-height: 0; /* ป้องกันเนื้อหาดันขนาด Grid */
+        }
+
+        /* [แผงขวา] ปรับความสูง Y แยกกันตามตัวแปร */
+        .right-panel {
+            display: grid;
+            grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
+            gap: 1rem;
+            min-height: 0; /* ป้องกันเนื้อหาดันขนาด Grid */
+        }
+
+        .card { 
+            background-color: #000000; 
+            border: 1px solid #334155; 
+            border-radius: 0.75rem; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; /* สำคัญมากสำหรับการปรับขนาด */
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* ป้องกันเนื้อหาล้น */
+        }
+
+        .machine-img {
+            max-width: 90%;
+            max-height: 85%;
+            object-fit: contain;
+        }
+
+        .label-tag {
+            position: absolute;
+            top: 0.75rem; left: 0.75rem;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: bold;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* ปรับสไตล์ให้ canvas ขยายเต็มพื้นที่ */
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <header class="flex justify-between items-center h-14 px-6 flex-shrink-0">
+        <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">Machine Monitoring System</h1>
+        <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
+    </header>
+
+    <main class="dashboard-container">
+        
+        <!-- ซ้าย: DATA -->
+        <div class="card !justify-start p-4 overflow-hidden">
+            <span class="label-tag">⑤ DATA</span>
+            <div class="w-full mt-8 overflow-y-auto"> <!-- เพิ่ม overflow-y-auto สำหรับตาราง -->
+                <table class="w-full text-[11px] text-left">
+                    <thead class="text-blue-300 border-b border-slate-700 sticky top-0 bg-black">
+                        <tr><th>Name</th><th class="text-center">T</th><th class="text-center">P</th><th class="text-right">S</th></tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- กลาง: เครื่องจักร -->
+        <div class="center-panel">
+            <div class="card">
+                <span class="label-tag">Center View</span>
+                <img src="cen.png" alt=" " class="machine-img">
+            </div>
+            <div class="card">
+                <span class="label-tag">① MACHINE INLET</span>
+                <img src="in.png" alt=" " class="machine-img">
+            </div>
+            <div class="card">
+                <span class="label-tag">② MACHINE OUTLET</span>
+                <img src="out.png" alt=" " class="machine-img">
+            </div>
+        </div>
+
+        <!-- ขวา: กราฟ -->
+        <div class="right-panel">
+            <!-- ③ STATUS RATIO (แนว Y ปรับที่ --height-chart-top) -->
+            <div class="card p-4">
+                <span class="label-tag">③ STATUS RATIO</span>
+                <!-- จัดวางวงกลม 2 อัน -->
+                <div class="flex w-full h-full mt-6 gap-2 min-height-0">
+                    <div class="flex-1 h-full"><canvas id="pieChart1"></canvas></div>
+                    <div class="flex-1 h-full"><canvas id="pieChart2"></canvas></div>
+                </div>
+                <div class="mt-2 text-center flex-shrink-0">
+                    <div class="text-[10px] text-slate-500 uppercase">Efficiency</div>
+                    <div id="eff-val" class="text-2xl font-black text-green-400">--%</div>
+                </div>
+            </div>
+
+            <!-- ④ PRODUCTION (แนว Y ปรับที่ --height-chart-bottom) -->
+            <div class="card p-2">
+                <span class="label-tag">④ PRODUCTION</span>
+                <div class="w-full h-full pt-8 pb-2"> <!-- เพิ่ม padding ล่างสำหรับแกน -->
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // แก้ไขส่วนที่ไม่เกี่ยวข้องห้ามแก้ไข แต่จำเป็นต้องเพิ่ม pieChart2 และ datasets สำหรับ 4 เส้น
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        // ตัวเลือกกราฟพื้นฐานเพื่อป้องกันเนื้อหาล้น
+        const commonOptions = {
+            maintainAspectRatio: false, // สำคัญสำหรับการปรับขนาดอิสระ
+            responsive: true,
+            plugins: { legend: { display: false } }
+        };
+
+        // สร้างกราฟวงกลมอันที่ 1
+        const pieChart1 = new Chart(document.getElementById('pieChart1'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [85, 15], backgroundColor: ['#10b981', '#1e293b'], borderWidth: 0 }] },
+            options: { ...commonOptions, cutout: '75%' }
+        });
+
+        // สร้างกราฟวงกลมอันที่ 2 (เพิ่มใหม่ตามโจทย์)
+        const pieChart2 = new Chart(document.getElementById('pieChart2'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [70, 30], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0 }] },
+            options: { ...commonOptions, cutout: '75%' }
+        });
+
+        // สร้างกราฟเส้น 4 เส้น (แก้ไขตามโจทย์)
+        const lineChart = new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: ['1','2','3','4','5'],
+                datasets: [
+                    { label: 'Line 1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false },
+                    { label: 'Line 2', data: [20, 15, 25, 10, 25], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false },
+                    { label: 'Line 3', data: [5, 10, 5, 20, 15], borderColor: '#f59e0b', tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false },
+                    { label: 'Line 4', data: [15, 20, 10, 15, 10], borderColor: '#ef4444', tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false }
+                ]
+            },
+            options: { 
+                ...commonOptions,
+                scales: { 
+                    x: { display: false }, /* ซ่อนแกน X ตามโค้ดเดิม */
+                    y: { display: false }  /* ซ่อนแกน Y ตามโค้ดเดิม */
+                } 
+            }
+        });
+
+        async function fetchData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                let html = "";
+                data.table.forEach(item => {
+                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
+                    html += `<tr class="border-b border-slate-800/50">
+                        <td class="py-2 font-bold text-slate-400">${item.machine}</td>
+                        <td class="py-2 text-lg text-center text-blue-400 font-bold">${item.temp}</td>
+                        <td class="py-2 text-lg text-center text-emerald-400 font-bold">${item.pressure}</td>
+                        <td class="py-2 text-right font-bold ${statusColor}">${item.status.charAt(0)}</td>
+                    </tr>`;
+                });
+                document.getElementById('data-table').innerHTML = html;
+                document.getElementById('eff-val').innerText = data.machine1.temp + "%";
+                
+                // อัปเดตกราฟ (ตัวอย่างการนำค่าจาก Data มาใส่กราฟวงกลมอันที่ 1)
+                pieChart1.data.datasets[0].data = [data.machine1.temp, 100 - data.machine1.temp];
+                pieChart1.update();
+                pieChart2.update(); // อัปเดตอันที่ 2 ด้วยแม้ค่าจะคงที่
+            } catch (e) { console.error(e); }
+        }
+        fetchData();
+        setInterval(fetchData, 10000);
+    </script>
+</body>
+</html>
         :root {
             /* 1. ปรับแนว X (ความกว้างคอลัมน์) */
             --width-col-left: 0.8fr;   /* ขนาด X ของ DATA */
