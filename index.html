@@ -33,7 +33,6 @@
             text-transform: uppercase; letter-spacing: 2px;
         }
 
-        /* ปรับตำแหน่ง Watermark มาแทนที่ปุ่ม Reset */
         .watermark {
             position: absolute; top: 15px; right: 20px;
             font-size: 0.8rem;
@@ -54,7 +53,6 @@
             gap: 10px; width: 100%; margin-top: 40px;
         }
 
-        /* ... CSS ส่วนอื่นๆ คงเดิมตามโค้ดของคุณ ... */
         .group-container { border: 1px solid #333; background: #1a1a1a; padding: 5px; display: flex; flex-direction: column; border-radius: 4px; position: relative; }
         .group-header { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; color: #aaa; display: flex; justify-content: center; align-items: center; text-transform: uppercase; }
         .group-content { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(30px, auto); gap: 3px; flex-grow: 1; align-content: start; min-height: 80px; overflow-y: auto; }
@@ -65,7 +63,8 @@
         .block.leader { grid-column: span 2; grid-row: span 2; font-size: 0.8rem; font-weight: bold; min-height: 65px; }
         .status-green { background-color: var(--card-green) !important; }
         .status-red { background-color: var(--card-red) !important; }
-        .status-yellow { background-color: var(--card-yellow) !important; color: #000; }
+        .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
+        
         #modalOverlay, #authOverlay, #confirmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
         .modal { background: #222; padding: 20px; border-radius: 8px; width: 320px; border: 1px solid #444; position: relative; }
         .delete-btn-corner { position: absolute; top: 10px; left: 10px; color: var(--card-red); cursor: pointer; font-size: 1.2rem; }
@@ -81,7 +80,6 @@
 <body>
 
 <div class="main-title">Machine Plant1 Dashboard</div>
-<!-- ย้ายลายน้ำขึ้นมาไว้ด้านบน -->
 <div class="watermark">Created By RiDFinity</div>
 <div class="live-clock" id="liveClock">กำลังโหลด...</div>
 
@@ -89,14 +87,11 @@
     <div class="loading-text">กำลังดึงข้อมูลจาก Google Sheets...</div>
 </div>
 
-<!-- ... ส่วนของ Modal คงเดิม ... -->
 <div id="authOverlay"><div class="modal"><h3 style="text-align: center;">กรุณาใส่รหัสผ่าน</h3><input type="password" id="mainPass" oninput="checkAuthBtn(this, 'authBtn')"><button id="authBtn" class="btn-action btn-blue" style="display:none;" onclick="unlockApp()">เข้าสู่ระบบ</button></div></div>
 <div id="modalOverlay"><div class="modal"><div class="delete-btn-corner" onclick="askDelete()">🗑️</div><h3 style="margin-top:0; color: var(--accent-blue); text-align: center;" id="modalTitle"></h3><div class="option-row"><span>1. ใช้งานได้</span><select id="opt1" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div><div class="option-row"><span>2. น็อตครบ</span><select id="opt2" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div><div class="option-row"><span>3. สะอาด</span><select id="opt3" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div><button id="saveBtn" class="btn-action btn-blue" style="display:none;" onclick="saveStatus()">บันทึก</button><button onclick="closeModal()" style="margin-top: 10px; width: 100%; background: none; color: #aaa; border: none; cursor: pointer;">ปิดหน้าต่าง</button></div></div>
 <div id="confirmOverlay"><div class="modal" style="text-align: center;"><h3>ยืนยันการลบ?</h3><p>บล็อกนี้จะถูกซ่อนไว้จนกว่าจะมีการรีโหลดข้อมูลใหม่</p><button class="btn-action btn-danger" onclick="confirmDelete()">ใช่, ลบเลย</button><button onclick="document.getElementById('confirmOverlay').style.display='none'" style="margin-top: 10px; width: 100%; background: none; color: #aaa; border: none; cursor: pointer;">ยกเลิก</button></div></div>
 
 <script>
-    // ส่วน Script คงเดิมทั้งหมด ยกเว้นฟังก์ชัน manualReset ที่คุณสามารถลบออกหรือเก็บไว้ก็ได้ 
-    // (แต่เมื่อลบปุ่มออกแล้ว ฟังก์ชันนี้จะไม่มีการเรียกใช้งานจากหน้าเว็บ)
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwM34-rCON0BpTTpvp3u0_-33anp06OGKPxSrOGdszin118SuWIyhT7H7K5LzSQsW8BWg/exec";
@@ -112,6 +107,7 @@
     let groupOrder = JSON.parse(localStorage.getItem('groupOrder')) || {};
     let nameMap = {};
     let leaderStatusMap = {};
+    let statusMap = {}; // ตัวแปรใหม่สำหรับเก็บสถานะจากคอลัมน์ D
     let currentTargetId = null;
     let rawSheetData = [];
 
@@ -123,6 +119,8 @@
                 rawSheetData.forEach(item => {
                     nameMap[item.id] = item.name;
                     leaderStatusMap[item.id] = item.isLeader;
+                    // ดึงค่าสถานะจาก Sheet (ต้องมั่นใจว่า Apps Script ส่งค่าจากคอลัมน์ D มาด้วย)
+                    statusMap[item.id] = item.status; 
                 });
                 renderDashboard();
             }
@@ -139,6 +137,7 @@
         for (let i = 1; i <= totalGroups; i++) groupContents[i] = [];
         const placedIds = new Set();
         Object.values(groupOrder).forEach(ids => ids.forEach(id => placedIds.add(id)));
+        
         for (let g = 1; g <= totalGroups; g++) {
             if (groupOrder[g]) {
                 groupOrder[g].forEach(id => {
@@ -146,6 +145,7 @@
                 });
             }
         }
+
         rawSheetData.forEach((item, index) => {
             if (!placedIds.has(item.id.toString()) && !placedIds.has(item.id)) {
                 let targetG = (index % totalGroups) + 1;
@@ -193,7 +193,9 @@
         div.id = id;
         div.innerText = nameMap[id] || "N/A";
         div.onclick = (e) => { if (e.target === div) openModal(id); };
-        if (appData[id]) applyColor(div, appData[id]);
+        
+        // ส่งทั้ง data จาก LocalStorage และค่าสถานะจาก Sheet ไปประมวลผลสี
+        applyColor(div, appData[id]); 
         return div;
     }
 
@@ -220,11 +222,26 @@
     }
 
     function applyColor(el, data) {
-        if (!data || !el) return;
+        if (!el) return;
         el.classList.remove('status-green', 'status-red', 'status-yellow');
-        if (data.v1 === true && data.v2 === true && data.v3 === true) el.classList.add('status-green');
-        else if (data.v1 === false) el.classList.add('status-red');
-        else if (data.v1 !== "" && data.v2 !== "" && data.v3 !== "") el.classList.add('status-yellow');
+        
+        const id = el.id;
+        const sheetStatus = statusMap[id];
+
+        // 1. ตรวจสอบสถานะจาก Google Sheets ก่อน (Priority สูงสุดตามโจทย์)
+        if (sheetStatus !== undefined && sheetStatus !== null && sheetStatus !== "") {
+            const s = parseInt(sheetStatus);
+            if (s === 0) { el.classList.add('status-green'); return; }
+            if (s === 1) { el.classList.add('status-yellow'); return; }
+            if (s === 2) { el.classList.add('status-red'); return; }
+        }
+
+        // 2. ถ้าใน Sheet ไม่มีค่า ให้ใช้ Logic เดิมจาก LocalStorage (Manual Input)
+        if (data) {
+            if (data.v1 === true && data.v2 === true && data.v3 === true) el.classList.add('status-green');
+            else if (data.v1 === false) el.classList.add('status-red');
+            else if (data.v1 !== "" && data.v2 !== "" && data.v3 !== "") el.classList.add('status-yellow');
+        }
     }
 
     function validateForm() {
@@ -242,15 +259,6 @@
         saveAllOrders();
         document.getElementById('confirmOverlay').style.display = 'none';
         closeModal();
-    }
-
-    // ลบ manualReset ออกไปเลยก็ได้ครับ หรือปล่อยไว้ก็ได้
-    function manualReset() {
-        if (prompt("รหัสผ่าน RESET ข้อมูลทั้งหมด (รวมตำแหน่ง):") === MASTER_KEY) {
-            localStorage.removeItem('heatmapData');
-            localStorage.removeItem('groupOrder');
-            location.reload();
-        }
     }
 
     function checkAuthBtn(input, btnId) { document.getElementById(btnId).style.display = input.value.length > 0 ? 'block' : 'none'; }
