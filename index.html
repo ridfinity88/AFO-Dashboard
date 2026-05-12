@@ -26,28 +26,17 @@
         }
 
         .main-title {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #ccc;
-            z-index: 5;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            position: absolute; top: 5px; left: 50%;
+            transform: translateX(-50%); font-size: 1.4rem;
+            font-weight: bold; color: #ccc; z-index: 5;
+            text-transform: uppercase; letter-spacing: 2px;
         }
 
         .watermark {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.2);
-            z-index: 5;
-            pointer-events: none;
-            letter-spacing: 3px;
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%); font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.2); z-index: 5;
+            pointer-events: none; letter-spacing: 3px;
         }
 
         .live-clock {
@@ -77,7 +66,7 @@
         .group-header {
             font-size: 0.75rem; font-weight: bold; margin-bottom: 5px;
             border-bottom: 1px solid #333; padding-bottom: 2px; color: #aaa;
-            display: flex; justify-content: center; align-items: center; gap: 5px;
+            display: flex; justify-content: center; align-items: center;
             text-transform: uppercase;
         }
 
@@ -85,7 +74,6 @@
             position: absolute; top: 2px; right: 5px; color: var(--accent-blue);
             cursor: pointer; font-size: 1.2rem; font-weight: bold; width: 25px; text-align: center;
         }
-        .btn-add-block:hover { color: white; }
 
         .group-content {
             display: grid; grid-template-columns: repeat(4, 1fr);
@@ -106,9 +94,6 @@
             font-size: 0.8rem; font-weight: bold; min-height: 65px;
         }
 
-        .edit-icon { cursor: pointer; font-size: 0.7rem; opacity: 0.6; }
-        .edit-icon:hover { opacity: 1; color: var(--accent-blue); }
-
         .status-green { background-color: var(--card-green) !important; }
         .status-red { background-color: var(--card-red) !important; }
         .status-yellow { background-color: var(--card-yellow) !important; color: #000; }
@@ -119,37 +104,30 @@
         }
         .modal { background: #222; padding: 20px; border-radius: 8px; width: 320px; border: 1px solid #444; position: relative; }
         
-        .delete-btn-corner {
-            position: absolute; top: 10px; left: 10px; color: var(--card-red);
-            cursor: pointer; font-size: 1.2rem;
-        }
-
+        .delete-btn-corner { position: absolute; top: 10px; left: 10px; color: var(--card-red); cursor: pointer; font-size: 1.2rem; }
         .option-row { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
         select { padding: 4px; background: #333; color: white; border: 1px solid #555; border-radius: 3px; }
-        
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-blue { background: var(--accent-blue); color: white; }
-        .btn-gray { background: #444; color: white; }
         .btn-danger { background: var(--card-red); color: white; }
-
         #saveBtn { display: none; }
         input[type="password"] { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; text-align: center; }
+        .loading-text { text-align: center; color: var(--accent-blue); margin-top: 50px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
 <div class="main-title">Machine Plant1 Dashboard</div>
-
 <div class="watermark">Created By RiDFinity</div>
-
 <div class="live-clock" id="liveClock">กำลังโหลด...</div>
 <div class="header-controls">
     <button class="btn-reset-main" onclick="manualReset()">RESET STATUS</button>
 </div>
 
-<div class="dashboard" id="dashboard"></div>
+<div class="dashboard" id="dashboard">
+    <div class="loading-text">กำลังดึงข้อมูลจาก Google Sheets...</div>
+</div>
 
-<!-- Modal Overlays เหมือนเดิม -->
 <div id="authOverlay">
     <div class="modal">
         <h3 style="text-align: center;">กรุณาใส่รหัสผ่าน</h3>
@@ -158,23 +136,10 @@
     </div>
 </div>
 
-<div id="addChoiceOverlay">
-    <div class="modal">
-        <h3 style="text-align: center; color: var(--accent-blue);">เพิ่มรายการใหม่</h3>
-        <p style="text-align: center; font-size: 0.9rem; color: #ccc;">กรุณาเลือกประเภทบล็อกที่ต้องการเพิ่ม</p>
-        <button class="btn-action btn-blue" onclick="executeAddBlock('leader')">บล็อกใหญ่</button>
-        <button class="btn-action btn-gray" onclick="executeAddBlock('member')">บล็อกเล็ก</button>
-        <button onclick="document.getElementById('addChoiceOverlay').style.display='none'" style="margin-top: 15px; width: 100%; background: none; color: #aaa; border: none; cursor: pointer;">ยกเลิก</button>
-    </div>
-</div>
-
 <div id="modalOverlay">
     <div class="modal">
         <div class="delete-btn-corner" onclick="askDelete()">🗑️</div>
-        <h3 style="margin-top:0; color: var(--accent-blue); text-align: center;">
-            <span id="modalTitle"></span>
-            <span class="edit-icon" onclick="editBlockName()">✏️</span>
-        </h3>
+        <h3 style="margin-top:0; color: var(--accent-blue); text-align: center;" id="modalTitle"></h3>
         <div class="option-row"><span>1. ใช้งานได้</span><select id="opt1" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div>
         <div class="option-row"><span>2. น็อตครบ</span><select id="opt2" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div>
         <div class="option-row"><span>3. สะอาด</span><select id="opt3" onchange="validateForm()"><option value="">เลือก</option><option value="true">✅ ถูก</option><option value="false">❌ ผิด</option></select></div>
@@ -186,7 +151,7 @@
 <div id="confirmOverlay">
     <div class="modal" style="text-align: center;">
         <h3>ยืนยันการลบ?</h3>
-        <p>คุณต้องการลบบล็อกนี้ออกจากระบบใช่หรือไม่?</p>
+        <p>บล็อกนี้จะถูกซ่อนไว้จนกว่าจะมีการรีโหลดข้อมูลใหม่</p>
         <button class="btn-action btn-danger" onclick="confirmDelete()">ใช่, ลบเลย</button>
         <button onclick="document.getElementById('confirmOverlay').style.display='none'" style="margin-top: 10px; width: 100%; background: none; color: #aaa; border: none; cursor: pointer;">ยกเลิก</button>
     </div>
@@ -195,79 +160,63 @@
 <script>
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
-    
-    // [แก้ไขหลัก] กำหนดชื่อกลุ่มคงที่ 15 กลุ่มที่นี่
+    // *** เปลี่ยน URL ตรงนี้เป็นของท่าน ***
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwM34-rCON0BpTTpvp3u0_-33anp06OGKPxSrOGdszin118SuWIyhT7H7K5LzSQsW8BWg/exec";
+
     const FIXED_GROUP_NAMES = {
-        1: "Packaging A",
-        2: "Packaging B",
-        3: "Conveyor Line 1",
-        4: "Conveyor Line 2",
-        5: "Robot Arm 1",
-        6: "Robot Arm 2",
-        7: "Sealing Machine",
-        8: "Labeling Unit",
-        9: "Inspection System",
-        10: "Palletizer",
-        11: "Storage Area",
-        12: "Cooling Unit",
-        13: "Sorting Zone",
-        14: "Mixing Tank",
-        15: "Emergency Unit"
+        1: "Packaging A", 2: "Packaging B", 3: "Conveyor Line 1", 4: "Conveyor Line 2",
+        5: "Robot Arm 1", 6: "Robot Arm 2", 7: "Sealing Machine", 8: "Labeling Unit",
+        9: "Inspection System", 10: "Palletizer", 11: "Storage Area", 12: "Cooling Unit",
+        13: "Sorting Zone", 14: "Mixing Tank", 15: "Emergency Unit"
     };
 
-    let currentTargetId = null;
-    let targetGroupIdForAdd = null;
-
     let appData = JSON.parse(localStorage.getItem('heatmapData')) || {};
-    let groupMap = JSON.parse(localStorage.getItem('groupMap'));
-    let nameMap = JSON.parse(localStorage.getItem('nameMap')) || {};
+    let groupMap = {};
+    let nameMap = {};
+    let leaderStatusMap = {};
+    let currentTargetId = null;
 
-    function checkInitialData() {
-        if (!groupMap) {
-            groupMap = {};
-            for (let g = 1; g <= totalGroups; g++) {
-                groupMap[g] = [];
-                for (let p = 1; p <= 10; p++) {
-                    let id = `g${g}-p${p}-${Date.now()}-${p}`;
-                    groupMap[g].push(id);
-                    nameMap[id] = (p <= 2) ? `ห${p}` : `ส${p-2}`;
-                }
+    async function loadSheetData() {
+        try {
+            const response = await fetch(SHEET_API_URL);
+            const sheetData = await response.json();
+            
+            if (sheetData && sheetData.length > 0) {
+                groupMap = {};
+                nameMap = {};
+                leaderStatusMap = {};
+                for (let i = 1; i <= totalGroups; i++) groupMap[i] = [];
+
+                sheetData.forEach((item, index) => {
+                    let gNum = (index % totalGroups) + 1; 
+                    groupMap[gNum].push(item.id);
+                    nameMap[item.id] = item.name;
+                    leaderStatusMap[item.id] = item.isLeader;
+                });
+                
+                localStorage.setItem('nameMap', JSON.stringify(nameMap));
+                localStorage.setItem('leaderStatusMap', JSON.stringify(leaderStatusMap));
+                renderDashboard();
             }
-            saveAll();
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            document.getElementById('dashboard').innerHTML = `<div style="color:red; text-align:center; width:100%;">เกิดข้อผิดพลาด: ไม่สามารถเชื่อมต่อกับ Google Sheets ได้</div>`;
         }
-    }
-
-    function saveAll() {
-        localStorage.setItem('groupMap', JSON.stringify(groupMap));
-        localStorage.setItem('nameMap', JSON.stringify(nameMap));
     }
 
     function renderDashboard() {
         const container = document.getElementById('dashboard');
         container.innerHTML = '';
+        
         for (let g = 1; g <= totalGroups; g++) {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'group-container';
-            
-            // [แก้ไขหลัก] ดึงชื่อจาก FIXED_GROUP_NAMES และเอาปุ่มดินสอออก
             const gName = FIXED_GROUP_NAMES[g] || `กลุ่มที่ ${g}`;
-            groupDiv.innerHTML = `
-                <div class="group-header">
-                    <span>${gName}</span>
-                </div>
-                <div class="btn-add-block" onclick="showAddChoice(${g})">+</div>
-            `;
+            groupDiv.innerHTML = `<div class="group-header"><span>${gName}</span></div>`;
+            
             const contentDiv = document.createElement('div');
             contentDiv.className = 'group-content';
             contentDiv.id = `content-${g}`;
-            contentDiv.ondragover = (e) => {
-                e.preventDefault();
-                const dragging = document.querySelector('.dragging');
-                const afterElement = getDragAfterElement(contentDiv, e.clientY);
-                if (afterElement == null) contentDiv.appendChild(dragging);
-                else contentDiv.insertBefore(dragging, afterElement);
-            };
-            contentDiv.ondrop = (e) => { e.preventDefault(); saveCurrentOrder(); };
 
             if (groupMap[g]) {
                 groupMap[g].forEach(id => {
@@ -279,67 +228,15 @@
         }
     }
 
-    // ฟังก์ชันอื่นๆ ทำงานเหมือนเดิมทั้งหมด
     function createBlock(id) {
         const div = document.createElement('div');
-        const isLeader = id.includes('-lead-') || id.includes('-p1') || id.includes('-p2') || (nameMap[id] && nameMap[id].startsWith('ห'));
+        const isLeader = leaderStatusMap[id] === true;
         div.className = `block ${isLeader ? 'leader' : ''}`;
         div.id = id;
-        div.draggable = true;
         div.innerText = nameMap[id] || "N/A";
-        div.ondragstart = () => div.classList.add('dragging');
-        div.ondragend = () => div.classList.remove('dragging');
         div.onclick = () => openModal(id);
         applyColor(div, appData[id]);
         return div;
-    }
-
-    function showAddChoice(groupId) {
-        targetGroupIdForAdd = groupId;
-        document.getElementById('addChoiceOverlay').style.display = 'flex';
-    }
-
-    function executeAddBlock(type) {
-        const timestamp = Date.now();
-        const typeKey = (type === 'leader') ? 'lead' : 'mem';
-        const newId = `new-${typeKey}-${timestamp}`;
-        const defaultName = "N/A";
-        groupMap[targetGroupIdForAdd].push(newId);
-        nameMap[newId] = defaultName;
-        saveAll();
-        document.getElementById('addChoiceOverlay').style.display = 'none';
-        renderDashboard();
-    }
-
-    function editBlockName() {
-        const oldName = nameMap[currentTargetId];
-        const newName = prompt("แก้ไขชื่อ:", oldName);
-        if (newName) {
-            nameMap[currentTargetId] = newName;
-            document.getElementById('modalTitle').innerText = newName;
-            saveAll();
-            renderDashboard();
-        }
-    }
-
-    function askDelete() { document.getElementById('confirmOverlay').style.display = 'flex'; }
-
-    function confirmDelete() {
-        for (let g in groupMap) { groupMap[g] = groupMap[g].filter(id => id !== currentTargetId); }
-        delete appData[currentTargetId];
-        delete nameMap[currentTargetId];
-        saveAll();
-        document.getElementById('confirmOverlay').style.display = 'none';
-        closeModal();
-        renderDashboard();
-    }
-
-    function saveCurrentOrder() {
-        for (let g = 1; g <= totalGroups; g++) {
-            const blocks = [...document.getElementById(`content-${g}`).querySelectorAll('.block')];
-            groupMap[g] = blocks.map(b => b.id);
-        }
-        saveAll();
     }
 
     function openModal(id) {
@@ -347,9 +244,9 @@
         document.getElementById('modalTitle').innerText = nameMap[id];
         document.getElementById('modalOverlay').style.display = 'flex';
         const d = appData[id] || { v1: '', v2: '', v3: '' };
-        document.getElementById('opt1').value = (d.v1 === undefined || d.v1 === "") ? "" : d.v1.toString();
-        document.getElementById('opt2').value = (d.v2 === undefined || d.v2 === "") ? "" : d.v2.toString();
-        document.getElementById('opt3').value = (d.v3 === undefined || d.v3 === "") ? "" : d.v3.toString();
+        document.getElementById('opt1').value = d.v1 === undefined || d.v1 === "" ? "" : d.v1.toString();
+        document.getElementById('opt2').value = d.v2 === undefined || d.v2 === "" ? "" : d.v2.toString();
+        document.getElementById('opt3').value = d.v3 === undefined || d.v3 === "" ? "" : d.v3.toString();
         validateForm();
     }
 
@@ -372,14 +269,18 @@
         else if (data.v1 !== "" && data.v2 !== "" && data.v3 !== "") el.classList.add('status-yellow');
     }
 
-    function getDragAfterElement(container, y) {
-        const draggables = [...container.querySelectorAll('.block:not(.dragging)')];
-        return draggables.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-            else return closest;
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    function validateForm() {
+        const v1 = document.getElementById('opt1').value, v2 = document.getElementById('opt2').value, v3 = document.getElementById('opt3').value;
+        document.getElementById('saveBtn').style.display = (v1 !== "" && v2 !== "" && v3 !== "") ? 'block' : 'none';
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+    function askDelete() { document.getElementById('confirmOverlay').style.display = 'flex'; }
+    function confirmDelete() {
+        const el = document.getElementById(currentTargetId);
+        if(el) el.style.display = 'none';
+        document.getElementById('confirmOverlay').style.display = 'none';
+        closeModal();
     }
 
     function manualReset() {
@@ -390,22 +291,6 @@
         }
     }
 
-    function checkReset() {
-        const now = new Date();
-        const last = localStorage.getItem('lastResetDate');
-        if (last !== now.toDateString() && now.getHours() >= 5) {
-            appData = {};
-            localStorage.setItem('heatmapData', JSON.stringify(appData));
-            localStorage.setItem('lastResetDate', now.toDateString());
-            location.reload();
-        }
-    }
-
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
-    function validateForm() {
-        const v1 = document.getElementById('opt1').value, v2 = document.getElementById('opt2').value, v3 = document.getElementById('opt3').value;
-        document.getElementById('saveBtn').style.display = (v1 !== "" && v2 !== "" && v3 !== "") ? 'block' : 'none';
-    }
     function checkAuthBtn(input, btnId) { document.getElementById(btnId).style.display = input.value.length > 0 ? 'block' : 'none'; }
     function unlockApp() {
         if (document.getElementById('mainPass').value === MASTER_KEY) {
@@ -416,142 +301,11 @@
 
     window.onload = () => {
         if (sessionStorage.getItem('isLoggedIn') !== 'true') document.getElementById('authOverlay').style.display = 'flex';
-        checkReset();
-        checkInitialData();
-        renderDashboard();
+        loadSheetData();
         setInterval(() => {
             document.getElementById('liveClock').innerText = new Date().toLocaleString('th-TH');
         }, 1000);
     };
-
-const MASTER_KEY = "cpram2026";
-    const totalGroups = 15;
-    
-    // *** นำ URL ที่ได้จากขั้นตอน Deploy มาวางที่นี่ ***
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwM34-rCON0BpTTpvp3u0_-33anp06OGKPxSrOGdszin118SuWIyhT7H7K5LzSQsW8BWg/exec";
-
-    const FIXED_GROUP_NAMES = {
-        1: "Packaging A", 2: "Packaging B", 3: "Conveyor Line 1", 4: "Conveyor Line 2",
-        5: "Robot Arm 1", 6: "Robot Arm 2", 7: "Sealing Machine", 8: "Labeling Unit",
-        9: "Inspection System", 10: "Palletizer", 11: "Storage Area", 12: "Cooling Unit",
-        13: "Sorting Zone", 14: "Mixing Tank", 15: "Emergency Unit"
-    };
-
-    let appData = JSON.parse(localStorage.getItem('heatmapData')) || {};
-    let groupMap = JSON.parse(localStorage.getItem('groupMap'));
-    let nameMap = JSON.parse(localStorage.getItem('nameMap')) || {};
-    let leaderStatusMap = {}; // เก็บสถานะว่าเป็น Leader หรือไม่จาก Sheet
-
-    async function checkInitialData() {
-        // ดึงข้อมูลจาก Google Sheets เสมอเมื่อเปิดหน้าเว็บ (หรือจะเช็ค !groupMap แบบเดิมก็ได้)
-        try {
-            const response = await fetch(SHEET_API_URL);
-            const sheetData = await response.json();
-            
-            if (sheetData && sheetData.length > 0) {
-                groupMap = {};
-                nameMap = {};
-                leaderStatusMap = {};
-
-                // เตรียม Group ไว้ล่วงหน้า
-                for (let i = 1; i <= totalGroups; i++) groupMap[i] = [];
-
-                // กระจายข้อมูลจาก Sheet ลงแต่ละ Group (เรียงวน 1-15)
-                sheetData.forEach((item, index) => {
-                    let gNum = (index % totalGroups) + 1; 
-                    groupMap[gNum].push(item.id);
-                    nameMap[item.id] = item.name;
-                    leaderStatusMap[item.id] = item.isLeader;
-                });
-                
-                saveAll();
-                renderDashboard();
-            }
-        } catch (error) {
-            console.error("ไม่สามารถดึงข้อมูลจาก Google Sheets ได้:", error);
-            // หากดึงไม่ได้ ให้ใช้ข้อมูลเก่าจาก LocalStorage (ถ้ามี)
-            if (groupMap) renderDashboard();
-        }
-    }
-
-    function saveAll() {
-        localStorage.setItem('groupMap', JSON.stringify(groupMap));
-        localStorage.setItem('nameMap', JSON.stringify(nameMap));
-        // เก็บสถานะ Leader ไว้ใน LocalStorage ด้วยเพื่อให้ Refresh แล้วไม่เพี้ยน
-        localStorage.setItem('leaderStatusMap', JSON.stringify(leaderStatusMap));
-    }
-
-    function renderDashboard() {
-        const container = document.getElementById('dashboard');
-        if (!container) return;
-        container.innerHTML = '';
-        
-        // โหลด leaderStatusMap จาก Storage ถ้ามี
-        if (Object.keys(leaderStatusMap).length === 0) {
-            leaderStatusMap = JSON.parse(localStorage.getItem('leaderStatusMap')) || {};
-        }
-
-        for (let g = 1; g <= totalGroups; g++) {
-            const groupDiv = document.createElement('div');
-            groupDiv.className = 'group-container';
-            const gName = FIXED_GROUP_NAMES[g] || `กลุ่มที่ ${g}`;
-            groupDiv.innerHTML = `
-                <div class="group-header"><span>${gName}</span></div>
-                <div class="btn-add-block" onclick="showAddChoice(${g})">+</div>
-            `;
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'group-content';
-            contentDiv.id = `content-${g}`;
-            
-            // Drag and Drop Logic (คงเดิม)
-            contentDiv.ondragover = (e) => {
-                e.preventDefault();
-                const dragging = document.querySelector('.dragging');
-                const afterElement = getDragAfterElement(contentDiv, e.clientY);
-                if (afterElement == null) contentDiv.appendChild(dragging);
-                else contentDiv.insertBefore(dragging, afterElement);
-            };
-            contentDiv.ondrop = (e) => { e.preventDefault(); saveCurrentOrder(); };
-
-            if (groupMap[g]) {
-                groupMap[g].forEach(id => {
-                    contentDiv.appendChild(createBlock(id));
-                });
-            }
-            groupDiv.appendChild(contentDiv);
-            container.appendChild(groupDiv);
-        }
-    }
-
-    function createBlock(id) {
-        const div = document.createElement('div');
-        // เช็คสถานะ Leader จากข้อมูลที่ดึงมาจาก Sheet
-        const isLeader = leaderStatusMap[id] === true;
-        
-        div.className = `block ${isLeader ? 'leader' : ''}`;
-        div.id = id;
-        div.draggable = true;
-        div.innerText = nameMap[id] || "N/A";
-        div.ondragstart = () => div.classList.add('dragging');
-        div.ondragend = () => div.classList.remove('dragging');
-        div.onclick = () => openModal(id);
-        applyColor(div, appData[id]);
-        return div;
-    }
-
-    // ฟังก์ชันอื่นๆ (saveStatus, applyColor, manualReset, etc.) ให้คงไว้ตามเดิมจากโค้ดเก่าของคุณ
-
-    window.onload = () => {
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-        checkReset();
-        checkInitialData(); // เรียกดึงข้อมูลจาก Sheet
-        setInterval(() => {
-            document.getElementById('liveClock').innerText = new Date().toLocaleString('th-TH');
-        }, 1000);
-    };
-    
 </script>
 </body>
 </html>
