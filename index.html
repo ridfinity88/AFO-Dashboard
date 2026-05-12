@@ -25,7 +25,6 @@
             overflow: hidden; position: relative;
         }
 
-        /* 1. หัวข้อ Machine Plant1 ด้านบนกึ่งกลาง */
         .main-title {
             position: absolute;
             top: 5px;
@@ -33,13 +32,12 @@
             transform: translateX(-50%);
             font-size: 1.4rem;
             font-weight: bold;
-            color: #ccc);
+            color: #ccc;
             z-index: 5;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        /* 2. ลายน้ำ RiDFinity ด้านล่างกึ่งกลาง */
         .watermark {
             position: absolute;
             bottom: 20px;
@@ -67,7 +65,7 @@
         .dashboard {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
-            grid-template-rows: repeat(3, 29vh); /* ปรับลดเล็กน้อยเพื่อให้พอดีกับหัวข้อ/ลายน้ำ */
+            grid-template-rows: repeat(3, 29vh);
             gap: 10px; width: 100%; margin-top: 40px;
         }
 
@@ -80,6 +78,7 @@
             font-size: 0.75rem; font-weight: bold; margin-bottom: 5px;
             border-bottom: 1px solid #333; padding-bottom: 2px; color: #aaa;
             display: flex; justify-content: center; align-items: center; gap: 5px;
+            text-transform: uppercase;
         }
 
         .btn-add-block {
@@ -139,7 +138,7 @@
 </head>
 <body>
 
-<div class="main-title">Machine Plant1</div>
+<div class="main-title">Machine Plant1 Dashboard</div>
 
 <div class="watermark">Created By RiDFinity</div>
 
@@ -150,6 +149,7 @@
 
 <div class="dashboard" id="dashboard"></div>
 
+<!-- Modal Overlays เหมือนเดิม -->
 <div id="authOverlay">
     <div class="modal">
         <h3 style="text-align: center;">กรุณาใส่รหัสผ่าน</h3>
@@ -195,13 +195,32 @@
 <script>
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
+    
+    // [แก้ไขหลัก] กำหนดชื่อกลุ่มคงที่ 15 กลุ่มที่นี่
+    const FIXED_GROUP_NAMES = {
+        1: "Packaging A",
+        2: "Packaging B",
+        3: "Conveyor Line 1",
+        4: "Conveyor Line 2",
+        5: "Robot Arm 1",
+        6: "Robot Arm 2",
+        7: "Sealing Machine",
+        8: "Labeling Unit",
+        9: "Inspection System",
+        10: "Palletizer",
+        11: "Storage Area",
+        12: "Cooling Unit",
+        13: "Sorting Zone",
+        14: "Mixing Tank",
+        15: "Emergency Unit"
+    };
+
     let currentTargetId = null;
     let targetGroupIdForAdd = null;
 
     let appData = JSON.parse(localStorage.getItem('heatmapData')) || {};
     let groupMap = JSON.parse(localStorage.getItem('groupMap'));
     let nameMap = JSON.parse(localStorage.getItem('nameMap')) || {};
-    let groupNames = JSON.parse(localStorage.getItem('groupNames')) || {};
 
     function checkInitialData() {
         if (!groupMap) {
@@ -221,7 +240,6 @@
     function saveAll() {
         localStorage.setItem('groupMap', JSON.stringify(groupMap));
         localStorage.setItem('nameMap', JSON.stringify(nameMap));
-        localStorage.setItem('groupNames', JSON.stringify(groupNames));
     }
 
     function renderDashboard() {
@@ -230,11 +248,12 @@
         for (let g = 1; g <= totalGroups; g++) {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'group-container';
-            const gName = groupNames[g] || `กลุ่มที่ ${g}`;
+            
+            // [แก้ไขหลัก] ดึงชื่อจาก FIXED_GROUP_NAMES และเอาปุ่มดินสอออก
+            const gName = FIXED_GROUP_NAMES[g] || `กลุ่มที่ ${g}`;
             groupDiv.innerHTML = `
                 <div class="group-header">
                     <span>${gName}</span>
-                    <span class="edit-icon" onclick="editGroupName(${g})">✏️</span>
                 </div>
                 <div class="btn-add-block" onclick="showAddChoice(${g})">+</div>
             `;
@@ -260,6 +279,7 @@
         }
     }
 
+    // ฟังก์ชันอื่นๆ ทำงานเหมือนเดิมทั้งหมด
     function createBlock(id) {
         const div = document.createElement('div');
         const isLeader = id.includes('-lead-') || id.includes('-p1') || id.includes('-p2') || (nameMap[id] && nameMap[id].startsWith('ห'));
@@ -284,19 +304,11 @@
         const typeKey = (type === 'leader') ? 'lead' : 'mem';
         const newId = `new-${typeKey}-${timestamp}`;
         const defaultName = "N/A";
-        
         groupMap[targetGroupIdForAdd].push(newId);
         nameMap[newId] = defaultName;
-        
         saveAll();
         document.getElementById('addChoiceOverlay').style.display = 'none';
         renderDashboard();
-    }
-
-    function editGroupName(gId) {
-        const oldName = groupNames[gId] || `กลุ่มที่ ${gId}`;
-        const newName = prompt("แก้ไขชื่อกลุ่ม:", oldName);
-        if (newName) { groupNames[gId] = newName; saveAll(); renderDashboard(); }
     }
 
     function editBlockName() {
