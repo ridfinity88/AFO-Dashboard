@@ -423,6 +423,135 @@
             document.getElementById('liveClock').innerText = new Date().toLocaleString('th-TH');
         }, 1000);
     };
+
+const MASTER_KEY = "cpram2026";
+    const totalGroups = 15;
+    
+    // *** นำ URL ที่ได้จากขั้นตอน Deploy มาวางที่นี่ ***
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwM34-rCON0BpTTpvp3u0_-33anp06OGKPxSrOGdszin118SuWIyhT7H7K5LzSQsW8BWg/exec";
+
+    const FIXED_GROUP_NAMES = {
+        1: "Packaging A", 2: "Packaging B", 3: "Conveyor Line 1", 4: "Conveyor Line 2",
+        5: "Robot Arm 1", 6: "Robot Arm 2", 7: "Sealing Machine", 8: "Labeling Unit",
+        9: "Inspection System", 10: "Palletizer", 11: "Storage Area", 12: "Cooling Unit",
+        13: "Sorting Zone", 14: "Mixing Tank", 15: "Emergency Unit"
+    };
+
+    let appData = JSON.parse(localStorage.getItem('heatmapData')) || {};
+    let groupMap = JSON.parse(localStorage.getItem('groupMap'));
+    let nameMap = JSON.parse(localStorage.getItem('nameMap')) || {};
+    let leaderStatusMap = {}; // เก็บสถานะว่าเป็น Leader หรือไม่จาก Sheet
+
+    async function checkInitialData() {
+        // ดึงข้อมูลจาก Google Sheets เสมอเมื่อเปิดหน้าเว็บ (หรือจะเช็ค !groupMap แบบเดิมก็ได้)
+        try {
+            const response = await fetch(SHEET_API_URL);
+            const sheetData = await response.json();
+            
+            if (sheetData && sheetData.length > 0) {
+                groupMap = {};
+                nameMap = {};
+                leaderStatusMap = {};
+
+                // เตรียม Group ไว้ล่วงหน้า
+                for (let i = 1; i <= totalGroups; i++) groupMap[i] = [];
+
+                // กระจายข้อมูลจาก Sheet ลงแต่ละ Group (เรียงวน 1-15)
+                sheetData.forEach((item, index) => {
+                    let gNum = (index % totalGroups) + 1; 
+                    groupMap[gNum].push(item.id);
+                    nameMap[item.id] = item.name;
+                    leaderStatusMap[item.id] = item.isLeader;
+                });
+                
+                saveAll();
+                renderDashboard();
+            }
+        } catch (error) {
+            console.error("ไม่สามารถดึงข้อมูลจาก Google Sheets ได้:", error);
+            // หากดึงไม่ได้ ให้ใช้ข้อมูลเก่าจาก LocalStorage (ถ้ามี)
+            if (groupMap) renderDashboard();
+        }
+    }
+
+    function saveAll() {
+        localStorage.setItem('groupMap', JSON.stringify(groupMap));
+        localStorage.setItem('nameMap', JSON.stringify(nameMap));
+        // เก็บสถานะ Leader ไว้ใน LocalStorage ด้วยเพื่อให้ Refresh แล้วไม่เพี้ยน
+        localStorage.setItem('leaderStatusMap', JSON.stringify(leaderStatusMap));
+    }
+
+    function renderDashboard() {
+        const container = document.getElementById('dashboard');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        // โหลด leaderStatusMap จาก Storage ถ้ามี
+        if (Object.keys(leaderStatusMap).length === 0) {
+            leaderStatusMap = JSON.parse(localStorage.getItem('leaderStatusMap')) || {};
+        }
+
+        for (let g = 1; g <= totalGroups; g++) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'group-container';
+            const gName = FIXED_GROUP_NAMES[g] || `กลุ่มที่ ${g}`;
+            groupDiv.innerHTML = `
+                <div class="group-header"><span>${gName}</span></div>
+                <div class="btn-add-block" onclick="showAddChoice(${g})">+</div>
+            `;
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'group-content';
+            contentDiv.id = `content-${g}`;
+            
+            // Drag and Drop Logic (คงเดิม)
+            contentDiv.ondragover = (e) => {
+                e.preventDefault();
+                const dragging = document.querySelector('.dragging');
+                const afterElement = getDragAfterElement(contentDiv, e.clientY);
+                if (afterElement == null) contentDiv.appendChild(dragging);
+                else contentDiv.insertBefore(dragging, afterElement);
+            };
+            contentDiv.ondrop = (e) => { e.preventDefault(); saveCurrentOrder(); };
+
+            if (groupMap[g]) {
+                groupMap[g].forEach(id => {
+                    contentDiv.appendChild(createBlock(id));
+                });
+            }
+            groupDiv.appendChild(contentDiv);
+            container.appendChild(groupDiv);
+        }
+    }
+
+    function createBlock(id) {
+        const div = document.createElement('div');
+        // เช็คสถานะ Leader จากข้อมูลที่ดึงมาจาก Sheet
+        const isLeader = leaderStatusMap[id] === true;
+        
+        div.className = `block ${isLeader ? 'leader' : ''}`;
+        div.id = id;
+        div.draggable = true;
+        div.innerText = nameMap[id] || "N/A";
+        div.ondragstart = () => div.classList.add('dragging');
+        div.ondragend = () => div.classList.remove('dragging');
+        div.onclick = () => openModal(id);
+        applyColor(div, appData[id]);
+        return div;
+    }
+
+    // ฟังก์ชันอื่นๆ (saveStatus, applyColor, manualReset, etc.) ให้คงไว้ตามเดิมจากโค้ดเก่าของคุณ
+
+    window.onload = () => {
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+        checkReset();
+        checkInitialData(); // เรียกดึงข้อมูลจาก Sheet
+        setInterval(() => {
+            document.getElementById('liveClock').innerText = new Date().toLocaleString('th-TH');
+        }, 1000);
+    };
+    
 </script>
 </body>
 </html>
