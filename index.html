@@ -19,23 +19,24 @@
         /* [จุดปรับที่ 1] ปรับความกว้างของ 3 คอลัมน์ (ซ้าย : กลาง : ขวา) */
         .dashboard-container {
             display: grid;
-            grid-template-columns: 0.5fr 1fr 0.5fr; /* ปรับตัวเลขเพื่อขยายความกว้างแต่ละส่วน */
+            grid-template-columns: 0.5fr 1fr 0.5fr; 
             gap: 1rem;
             height: calc(100vh - 4.5rem);
             padding: 0 1rem 1rem 1rem;
         }
 
-        /* [จุดปรับที่ 2] ควบคุมความสูงของ Card เครื่องจักร (ต้องเท่ากันเสมอ) */
+        /* [จุดปรับที่ 2] ควบคุมความสูงของแผงกลาง (3 Card) */
         .center-panel {
             display: grid;
-            grid-template-rows: 1fr 1fr; /* แบ่งครึ่งบน-ล่าง 50/50 เท่ากันเป๊ะ */
+            /* แก้ไขตรงนี้เพื่อปรับสูง-ต่ำ: 1fr คือส่วนสูงเท่ากัน, สามารถแก้เป็นเช่น 0.8fr 1.1fr 1.1fr ได้ */
+            grid-template-rows: 1fr 1fr 1fr; 
             gap: 1rem;
         }
 
-        /* [จุดปรับที่ 3] ควบคุมความสูงของฝั่งขวา (กราฟ 3 และ 4) */
+        /* [จุดปรับที่ 3] ควบคุมความสูงของฝั่งขวา */
         .right-panel {
             display: grid;
-            grid-template-rows: 1fr 1fr; /* ปรับเป็น 1fr 1.2fr หากต้องการให้กราฟล่างใหญ่กว่า */
+            grid-template-rows: 1fr 1fr; 
             gap: 1rem;
         }
 
@@ -97,9 +98,15 @@
 
         <div class="center-panel">
             <div class="card">
+                <span class="label-tag">Center View</span>
+                <img src="cen.png" alt=" " class="machine-img">
+            </div>
+            
+            <div class="card">
                 <span class="label-tag">① MACHINE INLET</span>
                 <img src="in.png" alt=" " class="machine-img">
             </div>
+            
             <div class="card">
                 <span class="label-tag">② MACHINE OUTLET</span>
                 <img src="out.png" alt=" " class="machine-img">
