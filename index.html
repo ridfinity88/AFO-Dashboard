@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adjustable Dashboard</title>
+    <title>Symmetry Machine Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,16 +16,24 @@
             color: #f8fafc; 
         }
 
-        /* --- จุดที่ปรับความใหญ่/เล็กของ Layout --- */
+        /* --- จุดปรับขนาดหลัก (Dashboard Layout) --- */
         .dashboard-container {
             display: grid;
-            /* ปรับตัวเลข 1.4fr (ใหญ่) และ 0.6fr (เล็ก) เพื่อขยายหรือลดความกว้างซ้าย-ขวา */
-            grid-template-columns: 1.4fr 0.6fr; 
-            /* ปรับตัวเลข 1.3fr (บน-ใหญ่) และ 0.7fr (ล่าง-เล็ก) เพื่อขยายหรือลดความสูงบน-ล่าง */
-            grid-template-rows: 1.3fr 0.7fr;    
+            /* 1. ปรับสัดส่วนซ้าย-ขวา: ตรงนี้ใช้ 1.2fr ต่อ 0.8fr เพื่อให้ 1-2 ใหญ่กว่า 3-5 */
+            grid-template-columns: 1.2fr 0.8fr; 
+            /* 2. ปรับสัดส่วนบน-ล่าง: ใช้ 1fr ต่อ 1fr เพื่อให้บนและล่างสูงเท่ากัน */
+            grid-template-rows: 1fr 1fr;    
             gap: 1rem;
             height: calc(100vh - 5rem);
             padding: 0 1rem 1rem 1rem;
+        }
+
+        /* 3. Grid ย่อยสำหรับ MACHINE IN/OUT เพื่อบังคับให้ขนาดเท่ากันเป๊ะ 50/50 */
+        .machine-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* แบ่งครึ่งเป๊ะๆ */
+            gap: 1rem;
+            grid-column: 1 / 2; /* อยู่คอลัมน์ซ้าย */
         }
 
         .card { 
@@ -42,10 +50,19 @@
             height: 100%;
         }
 
+        /* 4. ควบคุมรูปภาพให้เท่ากันทั้งคู่ */
+        .img-container {
+            width: 90%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         .machine-img {
-            max-width: 95%;
-            max-height: 85%;
-            object-fit: contain;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* ป้องกันภาพเบี้ยว และให้ขนาดล้อตามกรอบ */
         }
 
         .label-tag {
@@ -56,24 +73,31 @@
             color: #94a3b8;
             font-weight: bold;
             z-index: 10;
-            background: rgba(15, 23, 42, 0.5);
-            padding: 2px 8px;
-            border-radius: 4px;
         }
     </style>
 </head>
 <body class="flex flex-col">
 
     <header class="flex justify-between items-center h-16 px-6 flex-shrink-0">
-        <h1 class="text-xl font-bold text-blue-400 tracking-tighter uppercase">Machine Monitoring System</h1>
-        <div id="clock" class="text-lg font-mono text-slate-400">Loading...</div>
+        <h1 class="text-xl font-bold text-blue-400 uppercase">Machine Monitoring</h1>
+        <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
     </header>
 
     <main class="dashboard-container">
         
-        <div class="card">
-            <span class="label-tag">① MACHINE INLET</span>
-            <img src="in.png" alt=" " class="machine-img">
+        <div class="machine-section">
+            <div class="card">
+                <span class="label-tag">① MACHINE INLET</span>
+                <div class="img-container">
+                    <img src="in.png" alt=" " class="machine-img">
+                </div>
+            </div>
+            <div class="card">
+                <span class="label-tag">② MACHINE OUTLET</span>
+                <div class="img-container">
+                    <img src="out.png" alt=" " class="machine-img">
+                </div>
+            </div>
         </div>
 
         <div class="card !flex-row px-4">
@@ -82,38 +106,29 @@
                 <canvas id="pieChart"></canvas>
             </div>
             <div class="w-1/2 flex flex-col justify-center pl-4 border-l border-slate-700/50">
-                <div class="text-xs text-slate-500">Efficiency</div>
                 <div id="eff-val" class="text-2xl font-black text-green-400">--%</div>
+                <div class="text-[10px] text-slate-500 italic uppercase">Efficiency</div>
             </div>
         </div>
 
         <div class="card">
-            <span class="label-tag">② MACHINE OUTLET</span>
-            <img src="out.png" alt=" " class="machine-img">
+            <span class="label-tag text-blue-300">OVERALL MACHINE STATUS</span>
+            <div class="text-slate-600 text-xs italic">System synchronized...</div>
         </div>
 
         <div class="grid grid-rows-2 gap-4">
             <div class="card p-2">
                 <span class="label-tag">④ PRODUCTION</span>
-                <div class="w-full h-full pt-8">
-                    <canvas id="lineChart"></canvas>
-                </div>
+                <div class="w-full h-full pt-8"><canvas id="lineChart"></canvas></div>
             </div>
-
-            <div class="card !justify-start p-4 overflow-hidden text-[10px]">
-                <span class="label-tag">⑤ DATA</span>
+            <div class="card !justify-start p-4 overflow-hidden">
+                <span class="label-tag">⑤ DATA SUMMARY</span>
                 <div class="w-full mt-8">
-                    <table class="w-full text-left">
+                    <table class="w-full text-[10px] text-left">
                         <thead class="text-blue-300 border-b border-slate-700">
-                            <tr>
-                                <th>Name</th>
-                                <th class="text-center">T</th>
-                                <th class="text-center">P</th>
-                                <th class="text-right">S</th>
-                            </tr>
+                            <tr><th>NAME</th><th class="text-center">T</th><th class="text-center">P</th><th class="text-right">S</th></tr>
                         </thead>
-                        <tbody id="data-table">
-                            </tbody>
+                        <tbody id="data-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -124,9 +139,7 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
 
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
         const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'doughnut',
@@ -150,21 +163,17 @@
                 let html = "";
                 data.table.forEach(item => {
                     const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
-                    html += `
-                    <tr class="border-b border-slate-800/50">
+                    html += `<tr class="border-b border-slate-800/50">
                         <td class="py-2 font-bold text-slate-400">${item.machine}</td>
                         <td class="py-2 text-lg text-center text-blue-400 font-bold">${item.temp}</td>
                         <td class="py-2 text-lg text-center text-emerald-400 font-bold">${item.pressure}</td>
-                        <td class="py-2 text-right">
-                            <span class="font-bold ${statusColor}">${item.status.charAt(0)}</span>
-                        </td>
+                        <td class="py-2 text-right font-bold ${statusColor}">${item.status.charAt(0)}</td>
                     </tr>`;
                 });
                 document.getElementById('data-table').innerHTML = html;
                 document.getElementById('eff-val').innerText = data.machine1.temp + "%";
             } catch (e) { console.error(e); }
         }
-
         fetchData();
         setInterval(fetchData, 10000);
     </script>
