@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Machine Dashboard - Independent Scaling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ============================================================
+           [ จุดแก้ไขหลัก ] สำหรับปรับขนาด X และ Y ของแต่ละส่วน
+           ============================================================ */
+        
+        :root {
+            --width-col-left: 1.0fr;   /* ปรับให้ DATA กว้างขึ้นตามความต้องการก่อนหน้า */
+            --width-col-center: 1.2fr; 
+            --width-col-right: 0.6fr;  /* ปรับให้กลุ่มกราฟแคบลง */
+
+            --height-cen-view: 0.6fr;    
+            --height-machine-1: 0.8fr;   
+            --height-machine-2: 0.8fr; 
+
+            --height-chart-top: 1fr;    
+            --height-chart-bottom: 1fr; 
+        }
+
+        /* ============================================================ */
+
+        html, body { 
+            height: 100vh; 
+            margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #000000; 
+            color: #f8fafc; 
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
+            gap: 1rem;
+            height: calc(100vh - 4.5rem);
+            padding: 0 1rem 1rem 1rem;
+        }
+
+        .center-panel {
+            display: grid;
+            grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
+            gap: 1rem;
+        }
+
+        .right-panel {
+            display: grid;
+            grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
+            gap: 1rem;
+        }
+
+        .card { 
+            background-color: #000000; 
+            border: 1px solid #334155; 
+            border-radius: 0.75rem; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .machine-img {
+            width: 90%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .label-tag {
+            position: absolute;
+            top: 0.75rem; left: 0.75rem;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: bold;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* ส่วนเสริมสำหรับตัวเลขกลางวงกราฟ */
+        .chart-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .chart-value {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <header class="flex justify-between items-center h-14 px-6 flex-shrink-0">
+        <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">Machine Monitoring System</h1>
+        <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
+    </header>
+
+    <main class="dashboard-container">
+        
+        <!-- ⑤ DATA -->
+        <div class="card !justify-start p-4 overflow-hidden">
+            <span class="label-tag">⑤ DATA</span>
+            <div class="w-full mt-8">
+                <table class="w-full text-[11px] text-left">
+                    <thead class="text-blue-300 border-b border-slate-700">
+                        <tr><th>Name</th><th class="text-center">T</th><th class="text-center">P</th><th class="text-right">S</th></tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL -->
+        <div class="center-panel">
+            <div class="card">
+                <span class="label-tag">Center View</span>
+                <img src="cen.png" alt=" " class="machine-img">
+            </div>
+            <div class="card">
+                <span class="label-tag">① MACHINE INLET</span>
+                <img src="in.png" alt=" " class="machine-img">
+            </div>
+            <div class="card">
+                <span class="label-tag">② MACHINE OUTLET</span>
+                <img src="out.png" alt=" " class="machine-img">
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <!-- ③ STATUS RATIO (ปรับปรุงใหม่) -->
+            <div class="card p-4 !justify-around">
+                <span class="label-tag">③ STATUS RATIO</span>
+                
+                <!-- ชุดกราฟที่ 1 -->
+                <div class="flex items-center w-full px-2 mt-4">
+                    <div class="chart-container flex-shrink-0">
+                        <canvas id="pieChart1"></canvas>
+                        <div id="val-p1" class="chart-value text-green-400">85%</div>
+                    </div>
+                    <div class="ml-4 flex flex-col text-[10px] text-slate-400 space-y-1">
+                        <div class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> DATA1</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-700 rounded-full mr-2"></span> DATA2</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-800 rounded-full mr-2"></span> DATA3</div>
+                    </div>
+                </div>
+
+                <!-- ชุดกราฟที่ 2 -->
+                <div class="flex items-center w-full px-2">
+                    <div class="chart-container flex-shrink-0">
+                        <canvas id="pieChart2"></canvas>
+                        <div id="val-p2" class="chart-value text-blue-400">60%</div>
+                    </div>
+                    <div class="ml-4 flex flex-col text-[10px] text-slate-400 space-y-1">
+                        <div class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> DATA1</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-700 rounded-full mr-2"></span> DATA2</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-800 rounded-full mr-2"></span> DATA3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ④ PRODUCTION -->
+            <div class="card p-2">
+                <span class="label-tag">④ PRODUCTION</span>
+                <div class="w-full h-full pt-8">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        // กราฟวงกลมที่ 1
+        const pieChart1 = new Chart(document.getElementById('pieChart1'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#334155', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
+        });
+
+        // กราฟวงกลมที่ 2
+        const pieChart2 = new Chart(document.getElementById('pieChart2'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [60, 30, 10], backgroundColor: ['#3b82f6', '#334155', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
+        });
+
+        // กราฟเส้น 4 เส้น
+        const lineChart = new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: ['1','2','3','4','5'],
+                datasets: [
+                    { label: 'S1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'S2', data: [15, 10, 25, 20, 30], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'S3', data: [20, 15, 10, 25, 15], borderColor: '#f59e0b', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'S4', data: [5, 20, 20, 10, 25], borderColor: '#ef4444', tension: 0.4, pointRadius: 0, borderWidth: 2 }
+                ]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        });
+
+        async function fetchData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                let html = "";
+                data.table.forEach(item => {
+                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
+                    html += `<tr class="border-b border-slate-800/50">
+                        <td class="py-2 font-bold text-slate-400">${item.machine}</td>
+                        <td class="py-2 text-lg text-center text-blue-400 font-bold">${item.temp}</td>
+                        <td class="py-2 text-lg text-center text-emerald-400 font-bold">${item.pressure}</td>
+                        <td class="py-2 text-right font-bold ${statusColor}">${item.status.charAt(0)}</td>
+                    </tr>`;
+                });
+                document.getElementById('data-table').innerHTML = html;
+                
+                // อัปเดตตัวเลขกลางวง
+                const effValue = data.machine1.temp;
+                document.getElementById('val-p1').innerText = effValue + "%";
+                
+                // อัปเดตกราฟวงกลมที่ 1
+                pieChart1.data.datasets[0].data = [effValue, (100-effValue)*0.7, (100-effValue)*0.3];
+                pieChart1.update();
+            } catch (e) { console.error(e); }
+        }
+        fetchData();
+        setInterval(fetchData, 10000);
+    </script>
+</body>
+</html>
