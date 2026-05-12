@@ -12,17 +12,17 @@
            ============================================================ */
         
         :root {
-            /* 1. ปรับแนว X (ความกว้างคอลัมน์) */
-            --width-col-left: 0.8fr;   /* ขนาด X ของ DATA */
+            /* 1. ปรับแนว X (ความกว้างคอลัมน์): รวมกันต้องได้สัดส่วนที่พอดี (เช่น 0.5 + 1.2 + 0.5) */
+            --width-col-left: 0.6fr;   /* ขนาด X ของ DATA */
             --width-col-center: 1.0fr; /* ขนาด X ของกลุ่มเครื่องจักรกลาง */
-            --width-col-right: 0.2fr;  /* ขนาด X ของกลุ่มกราฟขวา */
+            --width-col-right: 0.6fr;  /* ขนาด X ของกลุ่มกราฟขวา */
 
-            /* 2. ปรับแนว Y (ความสูง Card กลาง) */
+            /* 2. ปรับแนว Y (ความสูง Card กลาง): ปรับเลขเพื่อยืด/หด แต่ละรูปอิสระ */
             --height-cen-view: 0.6fr;    /* ความสูง Y ของ Center View */
             --height-machine-1: 0.8fr;   /* ความสูง Y ของ Machine Inlet */
             --height-machine-2: 0.8fr; /* ความสูง Y ของ Machine Outlet */
 
-            /* 3. ปรับแนว Y (ความสูง Card ขวา) */
+            /* 3. ปรับแนว Y (ความสูง Card ขวา): */
             --height-chart-top: 1fr;    /* ความสูง Y ของ Status Ratio */
             --height-chart-bottom: 1fr; /* ความสูง Y ของ Production */
         }
@@ -37,6 +37,7 @@
             color: #f8fafc; 
         }
 
+        /* [โครงสร้างหลัก] ใช้ค่าตัวแปรจาก :root */
         .dashboard-container {
             display: grid;
             grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
@@ -45,12 +46,14 @@
             padding: 0 1rem 1rem 1rem;
         }
 
+        /* [แผงกลาง] ปรับความสูง Y แยกกันตามตัวแปร */
         .center-panel {
             display: grid;
             grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
             gap: 1rem;
         }
 
+        /* [แผงขวา] ปรับความสูง Y แยกกันตามตัวแปร */
         .right-panel {
             display: grid;
             grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
@@ -100,7 +103,6 @@
 
     <main class="dashboard-container">
         
-        <!-- ซ้าย: DATA -->
         <div class="card !justify-start p-4 overflow-hidden">
             <span class="label-tag">⑤ DATA</span>
             <div class="w-full mt-8">
@@ -113,7 +115,6 @@
             </div>
         </div>
 
-        <!-- กลาง: เครื่องจักร -->
         <div class="center-panel">
             <div class="card">
                 <span class="label-tag">Center View</span>
@@ -129,22 +130,18 @@
             </div>
         </div>
 
-        <!-- ขวา: กราฟ -->
         <div class="right-panel">
-            <!-- ③ แก้ไข: กราฟวงกลม 2 อัน -->
             <div class="card p-4">
                 <span class="label-tag">③ STATUS RATIO</span>
-                <div class="flex w-full h-2/5 mt-6 gap-2">
-                    <div class="flex-1 h-full"><canvas id="pieChart1"></canvas></div>
-                    <div class="flex-1 h-full"><canvas id="pieChart2"></canvas></div>
+                <div class="w-full h-3/5 mt-4">
+                    <canvas id="pieChart"></canvas>
                 </div>
-                <div class="mt-4 text-center">
+                <div class="mt-2 text-center">
                     <div class="text-[10px] text-slate-500 uppercase">Efficiency</div>
                     <div id="eff-val" class="text-2xl font-black text-green-400">--%</div>
                 </div>
             </div>
 
-            <!-- ④ แก้ไข: กราฟเส้น 4 เส้น -->
             <div class="card p-2">
                 <span class="label-tag">④ PRODUCTION</span>
                 <div class="w-full h-full pt-8">
@@ -159,40 +156,19 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
-        // สร้างกราฟวงกลมอันที่ 1
-        const pieChart1 = new Chart(document.getElementById('pieChart1'), {
+        const pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'doughnut',
-            data: { datasets: [{ data: [85, 15], backgroundColor: ['#10b981', '#1e293b'], borderWidth: 0 }] },
+            data: { datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }] },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
         });
 
-        // สร้างกราฟวงกลมอันที่ 2
-        const pieChart2 = new Chart(document.getElementById('pieChart2'), {
-            type: 'doughnut',
-            data: { datasets: [{ data: [70, 30], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0 }] },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
-        });
-
-        // สร้างกราฟเส้น 4 เส้น
         const lineChart = new Chart(document.getElementById('lineChart'), {
             type: 'line',
             data: {
                 labels: ['1','2','3','4','5'],
-                datasets: [
-                    { label: 'Line 1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                    { label: 'Line 2', data: [20, 15, 25, 10, 25], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                    { label: 'Line 3', data: [5, 10, 5, 20, 15], borderColor: '#f59e0b', tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                    { label: 'Line 4', data: [15, 20, 10, 15, 10], borderColor: '#ef4444', tension: 0.4, pointRadius: 0, borderWidth: 2 }
-                ]
+                datasets: [{ data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, pointRadius: 0 }]
             },
-            options: { 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } }, 
-                scales: { 
-                    x: { display: false }, 
-                    y: { display: false } 
-                } 
-            }
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
         });
 
         async function fetchData() {
@@ -211,10 +187,6 @@
                 });
                 document.getElementById('data-table').innerHTML = html;
                 document.getElementById('eff-val').innerText = data.machine1.temp + "%";
-                
-                // อัปเดตกราฟ (ตัวอย่างการนำค่าจาก Data มาใส่กราฟวงกลม)
-                pieChart1.data.datasets[0].data = [data.machine1.temp, 100 - data.machine1.temp];
-                pieChart1.update();
             } catch (e) { console.error(e); }
         }
         fetchData();
