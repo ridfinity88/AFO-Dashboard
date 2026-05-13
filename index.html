@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personnel Monitoring Dashboard Pro</title>
+    <title>Personnel Monitoring Dashboard Pro (Custom Layout)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
@@ -17,11 +17,56 @@
         }
         * { box-sizing: border-box; }
         html, body { background-color: var(--bg-color); color: var(--text-color); font-family: sans-serif; margin: 0; padding: 10px; width: 100vw; height: 100vh; overflow: hidden; position: relative; }
+        
         .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.4rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; letter-spacing: 2px; }
         .watermark { position: absolute; top: 15px; right: 20px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.3); z-index: 10; pointer-events: none; letter-spacing: 3px; }
         .live-clock { position: absolute; top: 10px; left: 15px; z-index: 10; background: #444; color: #ccc; border: 1px solid #555; padding: 5px 10px; font-size: 0.8rem; }
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 30.5vh); gap: 10px; width: 100%; margin-top: 40px; }
-        .group-container { border: 1px solid #333; background: #1a1a1a; padding: 5px; display: flex; flex-direction: column; border-radius: 4px; position: relative; }
+
+        /* ============================================================
+           ส่วนการปรับตำแหน่งและขนาด (Layout Management)
+           ============================================================ */
+        .dashboard { 
+            display: grid; 
+            width: 100%; 
+            height: calc(100vh - 60px);
+            margin-top: 45px;
+            gap: 10px; 
+            /* กำหนดจำนวน Column ทั้งหมด (เช่น 6 columns) */
+            grid-template-columns: repeat(6, 1fr);
+            /* กำหนดความสูงของแต่ละแถวอัตโนมัติ */
+            grid-auto-rows: minmax(100px, 1fr);
+            
+            /* การวาง Layout: 
+               g1 = กลุ่ม 1, g2 = กลุ่ม 2 ... g15 = กลุ่ม 15
+               ถ้าอยากให้กลุ่มไหนกว้าง ให้พิมพ์ชื่อซ้ำกันในแนวนอน
+               ถ้าอยากให้กลุ่มไหนสูง ให้พิมพ์ชื่อซ้ำกันในแนวตั้ง
+            */
+            grid-template-areas: 
+                "g1 g1 g1 g2 g3 g4"
+                "g5 g6 g7 g8 g9 g10"
+                "g11 g12 g13 g14 g15 g15";
+        }
+
+        /* ผูก ID กลุ่มเข้ากับ Grid Area */
+        #container-1 { grid-area: g1; }
+        #container-2 { grid-area: g2; }
+        #container-3 { grid-area: g3; }
+        #container-4 { grid-area: g4; }
+        #container-5 { grid-area: g5; }
+        #container-6 { grid-area: g6; }
+        #container-7 { grid-area: g7; }
+        #container-8 { grid-area: g8; }
+        #container-9 { grid-area: g9; }
+        #container-10 { grid-area: g10; }
+        #container-11 { grid-area: g11; }
+        #container-12 { grid-area: g12; }
+        #container-13 { grid-area: g13; }
+        #container-14 { grid-area: g14; }
+        #container-15 { grid-area: g15; }
+
+        /* ============================================================ */
+
+        .group-container { border: 1px solid #333; background: #1a1a1a; padding: 5px; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; }
         .group-header { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; color: #aaa; display: flex; justify-content: center; align-items: center; text-transform: uppercase; }
         
         .group-content { 
@@ -31,7 +76,6 @@
             gap: 3px; 
             flex-grow: 1; 
             align-content: start; 
-            min-height: 80px; 
             overflow-y: auto; 
         }
 
@@ -59,14 +103,13 @@
             min-height: 65px; 
         }
 
-        /* สถานะสี */
         .status-green { background-color: var(--card-green) !important; color: white; }
         .status-red { background-color: var(--card-red) !important; color: white; }
         .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
-        .status-unknown { background-color: #fff !important; color: #000 !important; } /* กรณีกลุ่มไม่ตรง */
+        .status-unknown { background-color: #fff !important; color: #000 !important; }
 
-        #modalOverlay, #authOverlay, #confirmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: #222; padding: 20px; border-radius: 8px; width: 320px; border: 1px solid #444; position: relative; }
+        #authOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #222; padding: 20px; border-radius: 8px; width: 320px; border: 1px solid #444; }
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-blue { background: var(--accent-blue); color: white; }
         input[type="password"] { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; text-align: center; }
@@ -78,17 +121,26 @@
 <div class="main-title">Machine Plant1 Dashboard</div>
 <div class="watermark">Created By RiDFinity</div>
 <div class="live-clock" id="liveClock">กำลังโหลด...</div>
-<div class="dashboard" id="dashboard"><div class="loading-text">กำลังดึงข้อมูล...</div></div>
 
-<div id="authOverlay"><div class="modal"><h3 style="text-align: center;">กรุณาใส่รหัสผ่าน</h3><input type="password" id="mainPass" oninput="checkAuthBtn(this, 'authBtn')"><button id="authBtn" class="btn-action btn-blue" style="display:none;" onclick="unlockApp()">เข้าสู่ระบบ</button></div></div>
+<div class="dashboard" id="dashboard">
+    <!-- กลุ่มจะถูกสร้างโดย JavaScript ตาม Grid Area ที่กำหนดไว้ใน CSS -->
+</div>
+
+<div id="authOverlay">
+    <div class="modal">
+        <h3 style="text-align: center;">กรุณาใส่รหัสผ่าน</h3>
+        <input type="password" id="mainPass" oninput="checkAuthBtn(this, 'authBtn')">
+        <button id="authBtn" class="btn-action btn-blue" style="display:none;" onclick="unlockApp()">เข้าสู่ระบบ</button>
+    </div>
+</div>
 
 <script>
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
-    // URL ของ Web App จาก Google Apps Script
+    // ใช้ URL เดิมของคุณ
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxnJHrkUy5YuQ7rk37Dm0aT9nhlx4CuLn0g2y0NmRW6i9yPwJLZJXSJqB0UvFPUvQu1vA/exec";
 
-    const FIXED_GROUP_NAMES = { 1: "ห้องเนื้อ", 2: "COOK1&3", 3: "SEASONING", 4: "ห้องผัก", 5: "ห้องหุงข้าว", 6: "ห้องย่างไก่", 7: "COOK2", 8: "ห้องล้าง สุก&ดิบ", 9: "ห้องผสมไส้", 10: "ห้องส่งออก", 11: "PACK A", 12: "PACK B", 13: "READY MEAL", 14: "ห้องกล่อง", 15: "ห้องเบอร์เกอร์" };
+    const FIXED_GROUP_NAMES = { 1: "ห้องเนื้อ", 2: "COOK1&3", 3: "SEASONING", 4: "ห้องผัก", 5: "ห้องหุงข้าว", 6: "ห้องย่างไก่", 7: "COOK2", 8: "ห้องล้าง สุก&ดิบ", 9: "ห้องผสมไ้", 10: "ห้องส่งออก", 11: "PACK A", 12: "PACK B", 13: "READY MEAL", 14: "ห้องกล่อง", 15: "ห้องเบอร์เกอร์" };
 
     let rawSheetData = [];
 
@@ -99,25 +151,23 @@
             renderDashboard();
         } catch (error) {
             console.error("Fetch Error:", error);
-            document.getElementById('dashboard').innerHTML = `<div style="color:red; text-align:center; width:100%;">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>`;
+            document.getElementById('dashboard').innerHTML = `<div style="color:red; text-align:center; grid-column: 1/-1;">เกิดข้อผิดพลาดในการเชื่อมต่อข้อมูล</div>`;
         }
     }
 
     function renderDashboard() {
         const container = document.getElementById('dashboard');
         container.innerHTML = '';
+        
         const groupContents = {};
         for (let i = 1; i <= totalGroups; i++) groupContents[i] = [];
 
         rawSheetData.forEach(item => {
-            // ลำดับความสำคัญ: 1.กลุ่มล่าสุด (F) 2.กลุ่มเริ่มต้น (E)
             let assignedGroupName = (item.latestGroup || item.initialGroup || "").trim();
             let groupId = findGroupIdByName(assignedGroupName);
-
             if (groupId) {
                 groupContents[groupId].push(item);
             } else {
-                // ถ้าไม่ตรงกลุ่มเลย ให้ไปอยู่กลุ่ม 1 แต่ติดสถานะ Unknown (สีขาว)
                 item.isUnknownGroup = true;
                 groupContents[1].push(item); 
             }
@@ -126,6 +176,7 @@
         for (let g = 1; g <= totalGroups; g++) {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'group-container';
+            groupDiv.id = `container-${g}`; // ผูกกับ CSS Grid Area
             groupDiv.innerHTML = `<div class="group-header"><span>${FIXED_GROUP_NAMES[g]}</span></div>`;
             
             const contentDiv = document.createElement('div');
@@ -147,11 +198,7 @@
                     const itemEl = evt.item;
                     const newGroupName = evt.to.dataset.name;
                     const rowIndex = itemEl.dataset.rowindex;
-                    
-                    // บันทึกลงคอลัมน์ F ใน Sheets
                     await updateLatestGroupInSheet(rowIndex, newGroupName);
-                    
-                    // อัปเดตสี (เผื่อกรณีลากจากที่ไม่มีกลุ่มเข้ากลุ่มที่มีอยู่จริง)
                     const itemData = rawSheetData.find(d => d.id === itemEl.id);
                     if(itemData) {
                         itemData.isUnknownGroup = false; 
@@ -173,11 +220,9 @@
         try {
             await fetch(SHEET_API_URL, {
                 method: "POST",
-                mode: "no-cors", // ใช้ no-cors สำหรับ GAS
-                headers: { "Content-Type": "application/json" },
+                mode: "no-cors",
                 body: JSON.stringify({ rowIndex: rowIndex, newGroupName: newGroupName })
             });
-            console.log("Updated Sheet:", newGroupName);
         } catch (e) { console.error("Update Error:", e); }
     }
 
@@ -193,13 +238,7 @@
 
     function applyColor(el, item) {
         el.classList.remove('status-green', 'status-red', 'status-yellow', 'status-unknown');
-        
-        // ถ้ากลุ่มไม่ตรงกับข้อมูลในระบบเลย (คอลัมน์ E/F ไม่ตรงกับชื่อกลุ่มทั้ง 15)
-        if (item.isUnknownGroup) {
-            el.classList.add('status-unknown');
-            return;
-        }
-
+        if (item.isUnknownGroup) { el.classList.add('status-unknown'); return; }
         const s = item.status;
         if (s === 0 || s === "0") el.classList.add('status-green');
         else if (s === 1 || s === "1") el.classList.add('status-yellow');
