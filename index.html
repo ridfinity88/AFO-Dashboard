@@ -20,13 +20,11 @@
         .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.4rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; letter-spacing: 2px; }
         .watermark { position: absolute; top: 15px; right: 20px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.3); z-index: 10; pointer-events: none; letter-spacing: 3px; }
         .live-clock { position: absolute; top: 10px; left: 15px; z-index: 10; background: #444; color: #ccc; border: 1px solid #555; padding: 5px 10px; font-size: 0.8rem; }
-        
-        /* Dashboard Grid หลัก */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 30.5vh); gap: 10px; width: 100%; margin-top: 40px; }
         .group-container { border: 1px solid #333; background: #1a1a1a; padding: 5px; display: flex; flex-direction: column; border-radius: 4px; position: relative; }
         .group-header { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; color: #aaa; display: flex; justify-content: center; align-items: center; text-transform: uppercase; }
         
-        /* จุดที่แก้ไข: เปลี่ยนจาก repeat(4, 1fr) เป็น repeat(8, 1fr) เพื่อลดขนาดแกน X ลงครึ่งหนึ่ง */
+        /* แก้ไข: ปรับ Grid เป็น 8 คอลัมน์ เพื่อให้ซอยความกว้างได้ละเอียดขึ้น */
         .group-content { 
             display: grid; 
             grid-template-columns: repeat(8, 1fr); 
@@ -40,35 +38,38 @@
 
         .sortable-ghost { opacity: 0.2; background: var(--accent-blue) !important; }
         .sortable-chosen { border: 1px solid var(--accent-blue); }
-
-        /* Box ปกติ */
+        
+        /* แก้ไข: ให้ Box ปกติกิน 2 ช่อง (เท่ากับ 1 ช่องของระบบ 4 คอลัมน์เดิม) */
         .block { 
-        background-color: var(--card-gray); 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 0.55rem; 
-        cursor: grab; 
-        text-align: center; 
-        padding: 2px; 
-        border-radius: 2px; 
-        min-height: 30px; 
-        grid-column: span 2; /* บังคับแกน X */
-    }
+            background-color: var(--card-gray); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.6rem; 
+            cursor: grab; 
+            text-align: center; 
+            padding: 2px; 
+            border-radius: 2px; 
+            user-select: none; 
+            position: relative; 
+            gap: 2px; 
+            min-height: 30px; 
+            grid-column: span 2; 
+        }
 
-    /* 3. บังคับให้ Leader กิน 4 ช่อง (เท่ากับความกว้าง 2 Box ปกติ) แต่สูง 2 แถวเหมือนเดิม */
-    .block.leader { 
-        grid-column: span 4; /* แกน X ลดลงเหลือครึ่งหนึ่งของพื้นที่กลุ่ม */
-        grid-row: span 2;    /* แกน Y สูงเท่าเดิม */
-        font-size: 0.8rem; 
-        font-weight: bold; 
-        min-height: 63px;    /* ปรับให้พอดีกับ 2 แถว + gap */
-    }
+        /* แก้ไข: ปรับ Leader ให้กิน 2 ช่อง (แคบลงครึ่งหนึ่งจากเดิมที่กว้าง 2/4 ตอนนี้เหลือ 2/8 ของความกว้างกลุ่ม) */
+        /* แต่ส่วนสูงยังกิน 2 แถว (grid-row: span 2) เหมือนเดิม */
+        .block.leader { 
+            grid-column: span 2; 
+            grid-row: span 2; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            min-height: 65px; 
+        }
 
         .status-green { background-color: var(--card-green) !important; }
         .status-red { background-color: var(--card-red) !important; }
         .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
-        
         #modalOverlay, #authOverlay, #confirmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
         .modal { background: #222; padding: 20px; border-radius: 8px; width: 320px; border: 1px solid #444; position: relative; }
         .delete-btn-corner { position: absolute; top: 10px; left: 10px; color: var(--card-red); cursor: pointer; font-size: 1.2rem; }
@@ -166,7 +167,7 @@
 
     function createBlock(id) {
         const div = document.createElement('div');
-        const isLeader = leaderStatusMap[id] === true || leaderStatusMap[id] === 1;
+        const isLeader = leaderStatusMap[id] === true;
         div.className = `block ${isLeader ? 'leader' : ''}`;
         div.id = id;
         div.innerText = nameMap[id] || "N/A";
