@@ -43,18 +43,21 @@
 
         /* Dashboard Layout 8x3 */
         .dashboard { 
-            display: grid; 
-            width: 100vw; 
-            height: 100vh;
-            padding: 40px 10px 10px 10px;
-            gap: var(--dashboard-gap);
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            grid-template-areas: 
-                "g1 g1 g2 g2 g3 g3 g4 g5"
-                "g1 g1 g2 g2 g3 g3 g6 g7"
-                "g8 g9 g10 g11 g12 g13 g14 g15";
-        }
+    display: grid; 
+    width: 100vw; 
+    height: 100vh;
+    padding: 40px 10px 10px 10px;
+    gap: var(--dashboard-gap);
+    grid-template-columns: repeat(8, 1fr);
+
+    /* แก้ไขบรรทัดนี้: แถวที่ 1, แถวที่ 2, แถวที่ 3 ตามลำดับ */
+    grid-template-rows: 0.9fr 0.9fr 1.2fr; 
+
+    grid-template-areas: 
+        "g1 g1 g2 g2 g3 g3 g4 g5"
+        "g1 g1 g2 g2 g3 g3 g6 g7"
+        "g8 g9 g10 g11 g12 g13 g14 g15";
+}
 
         #container-1 { grid-area: g1; }
         #container-2 { grid-area: g2; }
