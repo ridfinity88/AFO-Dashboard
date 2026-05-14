@@ -3,194 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Machine Monitoring - Hidden Behind Card</title>
+    <title>Symmetry Machine Dashboard - No Scrollbar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --width-col-left: 1.0fr;
             --width-col-center: 1.2fr;
-            --width-col-right: 0.8fr;
-            --card-green: #2e7d32;
-            --card-yellow: #fbc02d;
-            --card-red: #c62828;
+            --width-col-right: 0.6fr;
+            --height-cen-view: 0.6fr;
+            --height-machine-1: 0.8fr;
+            --height-machine-2: 0.8fr;
+            --height-chart-top: 1fr;
+            --height-chart-bottom: 1fr;
         }
-        
+
         html, body { 
             height: 100vh; 
-            margin: 0; 
-            padding: 0;
-            overflow: hidden !important; 
-            background-color: #000; 
-            color: #fff; 
+            margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #000000; 
+            color: #f8fafc; 
         }
-        
+
         .dashboard-container {
             display: grid;
             grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
-            gap: 1rem; 
-            height: calc(100vh - 4rem); 
-            padding: 1rem;
+            gap: 1rem;
+            height: calc(100vh - 4.5rem);
+            padding: 0 1rem 1rem 1rem;
         }
-        
-        /* Card ทำหน้าที่เป็นหน้าต่าง (Mask) */
+
+        .center-panel {
+            display: grid;
+            grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
+            gap: 1rem;
+        }
+
+        .right-panel {
+            display: grid;
+            grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
+            gap: 1rem;
+        }
+
+        /* ------------------------------------------------------------
+           [ จุดแก้ไขสำคัญ ] ซ่อน Scrollbar โดยการใช้ Masking
+           ------------------------------------------------------------ */
         .card { 
-            background: #111; 
+            background-color: #000000; 
             border: 1px solid #334155; 
             border-radius: 0.75rem; 
             position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            /* บังส่วนที่เกินออกมาทั้งหมด */
-            overflow: hidden !important; 
-        }
-        
-        .label-tag { 
-            position: absolute; 
-            top: 0.5rem; 
-            left: 0.5rem; 
-            font-size: 0.7rem; 
-            color: #94a3b8; 
-            background: rgba(0,0,0,0.8); 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            z-index: 20; /* ให้อยู่เหนือ Drop-zone */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden !important; /* บังส่วนที่เกินออกมา */
+            min-height: 0;
+            width: 100%;
+            height: 100%;
         }
 
-        /* Container ชั้นในที่ซ่อนอยู่หลัง Card */
-        .scroll-wrapper {
-            position: relative;
+        /* Wrapper ที่ยอมให้ Scroll ได้ แต่จะถูก Card บังแถบเลื่อนไว้ */
+        .scroll-mask {
             flex-grow: 1;
-            /* ขยายให้กว้างกว่า Card เพื่อผลัก Scrollbar ออกไปข้างนอก */
-            width: calc(100% + 30px); 
             overflow-y: auto;
             overflow-x: hidden;
-            /* ซ่อน Scrollbar มาตรฐาน (เพื่อความชัวร์) */
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            width: calc(100% + 20px); /* ขยายให้กว้างกว่า Card เพื่อดัน Scrollbar ออกไป */
+            padding-right: 20px;       /* ดันเนื้อหากลับมาให้พอดี */
+            scrollbar-width: none;     /* สำหรับ Firefox */
+            -ms-overflow-style: none;  /* สำหรับ IE/Edge */
         }
 
-        .scroll-wrapper::-webkit-scrollbar {
-            display: none;
+        .scroll-mask::-webkit-scrollbar {
+            display: none !important; /* สำหรับ Chrome/Safari */
+            width: 0 !important;
         }
 
-        /* พื้นที่วาง Block */
-        .drop-zone { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 0.5rem; 
-            padding: 2.5rem 35px 1rem 0.5rem; /* padding ขวาเผื่อไว้กันตัวเลขโดนบัง */
-            align-content: start; 
-            min-height: 100%;
+        /* ------------------------------------------------------------ */
+
+        .machine-img {
+            width: 90%;
+            height: 85%;
+            object-fit: contain;
         }
 
-        .drop-zone.large { 
-            grid-template-columns: repeat(6, 1fr); 
+        .label-tag {
+            position: absolute;
+            top: 0.75rem; left: 0.75rem;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: bold;
+            z-index: 20;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
         }
 
-        .block { background: #424242; border-radius: 4px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; cursor: grab; text-align: center; padding: 2px; }
-        .block.leader { grid-column: span 2; grid-row: span 2; height: 84px; font-weight: bold; border: 1px solid #666; }
-        
-        .status-0 { background-color: var(--card-green) !important; }
-        .status-1 { background-color: var(--card-yellow) !important; color: #000; }
-        .status-2 { background-color: var(--card-red) !important; }
-        
-        .ghost { opacity: 0.4; background: #3b82f6 !important; }
+        .chart-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .chart-value {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #10b981;
+        }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header class="flex justify-between items-center h-12 px-6">
-        <h1 class="text-lg font-bold text-blue-400 uppercase">Machine Plant Dashboard</h1>
-        <div id="clock" class="font-mono text-slate-400">00:00:00</div>
+    <header class="flex justify-between items-center h-14 px-6 flex-shrink-0">
+        <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">Machine Monitoring System</h1>
+        <div class="flex items-center gap-4">
+            <!-- เพิ่มช่องกรอกรหัส -->
+            <input type="password" id="auth-code" placeholder="Enter Code" 
+                   class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-32">
+            <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
+        </div>
     </header>
 
     <main class="dashboard-container">
-        <!-- กลุ่มที่ 1 -->
-        <div class="card">
-            <span class="label-tag">GROUP 1: INLET</span>
-            <div class="scroll-wrapper">
-                <div id="group-1" class="drop-zone large" data-name="GROUP 1"></div>
+        
+        <!-- ⑤ DATA (ซ่อน Scrollbar แล้ว) -->
+        <div class="card p-4">
+            <span class="label-tag">⑤ DATA</span>
+            <div class="scroll-mask mt-8">
+                <table class="w-full text-[11px] text-left">
+                    <thead class="text-blue-300 border-b border-slate-700 sticky top-0 bg-black">
+                        <tr><th>Name</th><th class="text-center">T</th><th class="text-center">P</th><th class="text-right">S</th></tr>
+                    </thead>
+                    <tbody id="data-table"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- กลุ่มที่ 2 -->
-        <div class="card">
-            <span class="label-tag">GROUP 2: PROCESS</span>
-            <div class="scroll-wrapper">
-                <div id="group-2" class="drop-zone large" data-name="GROUP 2"></div>
-            </div>
+        <!-- CENTER PANEL -->
+        <div class="center-panel">
+            <div class="card"><span class="label-tag">Center View</span><img src="cen.png" alt=" " class="machine-img"></div>
+            <div class="card"><span class="label-tag">① MACHINE INLET</span><img src="in.png" alt=" " class="machine-img"></div>
+            <div class="card"><span class="label-tag">② MACHINE OUTLET</span><img src="out.png" alt=" " class="machine-img"></div>
         </div>
 
-        <!-- กลุ่มที่ 3 -->
-        <div class="card">
-            <span class="label-tag">GROUP 3: OUTLET</span>
-            <div class="scroll-wrapper">
-                <div id="group-3" class="drop-zone" data-name="GROUP 3"></div>
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="card p-4 !justify-around">
+                <span class="label-tag">③ STATUS RATIO</span>
+                <div class="flex items-center w-full px-2 mt-4">
+                    <div class="chart-container flex-shrink-0">
+                        <canvas id="pieChart1"></canvas>
+                        <div id="val-p1" class="chart-value text-green-400">85%</div>
+                    </div>
+                    <div class="ml-4 flex flex-col text-[10px] text-slate-400 space-y-1">
+                        <div class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> DATA1</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-700 rounded-full mr-2"></span> DATA2</div>
+                    </div>
+                </div>
+                <div class="flex items-center w-full px-2">
+                    <div class="chart-container flex-shrink-0">
+                        <canvas id="pieChart2"></canvas>
+                        <div id="val-p2" class="chart-value text-blue-400">60%</div>
+                    </div>
+                    <div class="ml-4 flex flex-col text-[10px] text-slate-400 space-y-1">
+                        <div class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> DATA1</div>
+                        <div class="flex items-center"><span class="w-2 h-2 bg-slate-700 rounded-full mr-2"></span> DATA2</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <span class="label-tag">④ PRODUCTION</span>
+                <div class="w-full h-full pt-8">
+                    <canvas id="lineChart"></canvas>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLXGpD4n0Wi2_ksjjr7L5MHWiYJR-ZDjNsem9IKn1tEFUq6xhxnnCB7epqrZQmg7jCiA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
         
+        // ฟังก์ชันนาฬิกา
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
-        async function loadData() {
+        // ระบบกด Enter แทนการคลิก (ตัวอย่างการส่งรหัส)
+        document.getElementById('auth-code').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const code = this.value;
+                console.log("Processing code:", code);
+                // คุณสามารถใส่ Logic การเช็ครหัส หรือจำลองการคลิกปุ่มที่นี่
+                alert("รับข้อมูลรหัส: " + code); 
+                this.value = ''; // ล้างช่องหลังกด
+            }
+        });
+
+        // Setup Charts (เหมือนเดิม)
+        const pieChart1 = new Chart(document.getElementById('pieChart1'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [85, 15], backgroundColor: ['#10b981', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
+        });
+
+        const pieChart2 = new Chart(document.getElementById('pieChart2'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [60, 40], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
+        });
+
+        const lineChart = new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: ['1','2','3','4','5'],
+                datasets: [{ label: 'S1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        });
+
+        async function fetchData() {
             try {
-                const res = await fetch(SCRIPT_URL);
-                const data = await res.json();
-                renderBlocks(data);
-            } catch (e) { console.error("Load Error", e); }
-        }
-
-        function renderBlocks(data) {
-            document.querySelectorAll('.drop-zone').forEach(z => z.innerHTML = '');
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `block status-${item.status} ${item.isLeader ? 'leader' : ''}`;
-                div.id = item.id;
-                div.dataset.rowindex = item.rowIndex;
-                div.innerText = item.name;
-                const targetGroupName = item.latestGroup || item.initialGroup;
-                const targetZone = Array.from(document.querySelectorAll('.drop-zone')).find(z => z.dataset.name === targetGroupName);
-                if (targetZone) targetZone.appendChild(div);
-            });
-            setupSortable();
-        }
-
-        function setupSortable() {
-            document.querySelectorAll('.drop-zone').forEach(zone => {
-                new Sortable(zone, {
-                    group: 'machines',
-                    animation: 150,
-                    ghostClass: 'ghost',
-                    onEnd: function (evt) {
-                        saveOrderToSheet(evt.to);
-                        if (evt.from !== evt.to) saveOrderToSheet(evt.from);
-                    }
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                let html = "";
+                data.table.forEach(item => {
+                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
+                    html += `<tr class="border-b border-slate-800/50">
+                        <td class="py-2 font-bold text-slate-400">${item.machine}</td>
+                        <td class="py-2 text-lg text-center text-blue-400 font-bold">${item.temp}</td>
+                        <td class="py-2 text-lg text-center text-emerald-400 font-bold">${item.pressure}</td>
+                        <td class="py-2 text-right font-bold ${statusColor}">${item.status.charAt(0)}</td>
+                    </tr>`;
                 });
-            });
+                document.getElementById('data-table').innerHTML = html;
+            } catch (e) { console.error(e); }
         }
 
-        async function saveOrderToSheet(zoneElement) {
-            const groupName = zoneElement.dataset.name;
-            const blocks = Array.from(zoneElement.children);
-            const updates = blocks.map((block, index) => ({
-                rowIndex: block.dataset.rowindex,
-                newGroupName: groupName,
-                order: index + 1
-            }));
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ updates: updates })
-                });
-            } catch (e) { console.error("Save Error", e); }
-        }
-
-        window.onload = loadData;
+        fetchData();
+        setInterval(fetchData, 10000);
     </script>
 </body>
 </html>
