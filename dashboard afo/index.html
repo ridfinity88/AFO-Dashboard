@@ -3,315 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personnel Monitoring Dashboard (Order Memory)</title>
+    <title>Symmetry Machine Monitoring - Persistent Order</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
-            /* CONFIG AREA */
-            --dashboard-gap: 8px;
-            --block-height: 35px;       
-            --leader-height: 74px;      /* (35px * 2) + gap 4px */
-            
-            /* COLORS */
-            --bg-color: #000;
-            --card-gray: #424242;
+            --width-col-left: 1.0fr;
+            --width-col-center: 1.2fr;
+            --width-col-right: 0.8fr;
             --card-green: #2e7d32;
-            --card-red: #c62828;
             --card-yellow: #fbc02d;
-            --text-color: #fff;
-            --accent-blue: #2196F3;
+            --card-red: #c62828;
         }
-
-        * { box-sizing: border-box; }
-        html, body { 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; padding: 0; 
-            width: 100vw; height: 100vh; 
-            overflow: hidden; 
+        html, body { height: 100vh; margin: 0; overflow: hidden; background-color: #000; color: #fff; }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
+            gap: 1rem; height: calc(100vh - 4rem); padding: 1rem;
         }
+        .card { background: #111; border: 1px solid #334155; border-radius: 0.75rem; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .label-tag { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.7rem; color: #94a3b8; background: rgba(0,0,0,0.8); padding: 2px 8px; border-radius: 4px; z-index: 10; }
         
-        .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; }
-        .live-clock { position: absolute; top: 5px; left: 10px; z-index: 10; background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; }
-        .watermark { position: absolute; bottom: 5px; right: 10px; font-size: 0.6rem; color: rgba(255, 255, 255, 0.2); }
+        /* พื้นที่ลากวาง */
+        .drop-zone { flex-grow: 1; padding: 2.5rem 0.5rem 0.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; align-content: start; overflow-y: auto; }
+        .drop-zone.large { grid-template-columns: repeat(6, 1fr); }
 
-        /* Dashboard Layout 8x3 */
-        .dashboard { 
-            display: grid; 
-            width: 100vw; 
-            height: 100vh;
-            padding: 40px 10px 10px 10px;
-            gap: var(--dashboard-gap);
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: 70px 70px 1fr; /* แถว 1-2 เล็กลง แถว 3 ใหญ่ขึ้นตามที่คุณต้องการก่อนหน้านี้ */
-            grid-template-areas: 
-                "g1 g1 g2 g2 g3 g3 g4 g5"
-                "g1 g1 g2 g2 g3 g3 g6 g7"
-                "g8 g9 g10 g11 g12 g13 g14 g15";
-        }
-
-        #container-1 { grid-area: g1; }
-        #container-2 { grid-area: g2; }
-        #container-3 { grid-area: g3; }
-        #container-4 { grid-area: g4; }
-        #container-5 { grid-area: g5; }
-        #container-6 { grid-area: g6; }
-        #container-7 { grid-area: g7; }
-        #container-8 { grid-area: g8; }
-        #container-9 { grid-area: g9; }
-        #container-10 { grid-area: g10; }
-        #container-11 { grid-area: g11; }
-        #container-12 { grid-area: g12; }
-        #container-13 { grid-area: g13; }
-        #container-14 { grid-area: g14; }
-        #container-15 { grid-area: g15; }
-
-        .group-container { 
-            border: 1px solid #333; 
-            background: #111; 
-            padding: 6px; 
-            display: flex; 
-            flex-direction: column; 
-            border-radius: 4px; 
-            overflow: hidden; 
-        }
-
-        .group-header { 
-            font-size: 0.7rem; 
-            font-weight: bold; 
-            margin-bottom: 6px; 
-            border-bottom: 1px solid #222; 
-            padding-bottom: 4px; 
-            color: #aaa; 
-            text-align: center; 
-        }
+        .block { background: #424242; border-radius: 4px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; cursor: grab; text-align: center; padding: 2px; }
+        .block.leader { grid-column: span 2; grid-row: span 2; height: 84px; font-weight: bold; border: 1px solid #666; }
         
-        .group-content { 
-            display: grid; 
-            grid-auto-rows: var(--block-height); 
-            gap: 4px; 
-            flex-grow: 1; 
-            align-content: start; 
-            overflow-y: auto;
-        }
-
-        /* กลุ่มเล็ก 4-15 */
-        .group-content.small-group { grid-template-columns: repeat(4, 1fr); }
-        .small-group .block { grid-column: span 1; }
-        .small-group .block.leader { grid-column: span 2; grid-row: span 2; height: var(--leader-height); }
-
-        /* กลุ่มใหญ่ 1-3 */
-        .group-content.large-group { grid-template-columns: repeat(8, 1fr); }
-        .large-group .block { grid-column: span 1; }
-        .large-group .block.leader { grid-column: span 2; grid-row: span 2; height: var(--leader-height); }
-
-        .block { 
-            background-color: var(--card-gray); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 0.52rem; 
-            cursor: grab; 
-            padding: 2px; 
-            border-radius: 3px; 
-            height: var(--block-height);
-            text-align: center;
-            line-height: 1.1;
-        }
-        .block.leader { font-size: 0.6rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); }
-
-        .status-green { background-color: var(--card-green) !important; }
-        .status-red { background-color: var(--card-red) !important; }
-        .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
-        .status-unknown { background-color: #fff !important; color: #000 !important; }
-
-        #authOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: #222; padding: 25px; border-radius: 8px; width: 300px; text-align: center; border: 1px solid #444; }
-        .btn-action { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--accent-blue); color: white; }
-        input[type="password"] { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; text-align: center; }
+        .status-0 { background-color: var(--card-green) !important; }
+        .status-1 { background-color: var(--card-yellow) !important; color: #000; }
+        .status-2 { background-color: var(--card-red) !important; }
     </style>
 </head>
-<body>
+<body class="flex flex-col">
 
-<div class="main-title">Machine Plant1 Dashboard</div>
-<div class="live-clock" id="liveClock">...</div>
-<div class="watermark">RiDFinity Design</div>
+    <header class="flex justify-between items-center h-12 px-6">
+        <h1 class="text-lg font-bold text-blue-400 uppercase">Machine Plant Dashboard</h1>
+        <div id="clock" class="font-mono text-slate-400">00:00:00</div>
+    </header>
 
-<div class="dashboard" id="dashboard"></div>
+    <main class="dashboard-container">
+        <!-- กลุ่มที่ 1 (ใหญ่) -->
+        <div class="card">
+            <span class="label-tag">GROUP 1: INLET</span>
+            <div id="group-1" class="drop-zone large" data-name="GROUP 1"></div>
+        </div>
 
-<div id="authOverlay">
-    <div class="modal">
-        <h3>Access Required</h3>
-        <input type="password" id="mainPass" placeholder="Enter Password" oninput="checkAuthBtn(this, 'authBtn')">
-        <button id="authBtn" class="btn-action" style="display:none;" onclick="unlockApp()">LOGIN</button>
-    </div>
-</div>
+        <!-- กลุ่มที่ 2 (ใหญ่) -->
+        <div class="card">
+            <span class="label-tag">GROUP 2: PROCESS</span>
+            <div id="group-2" class="drop-zone large" data-name="GROUP 2"></div>
+        </div>
 
-<script>
-    const MASTER_KEY = "cpram2026";
-    const totalGroups = 15;
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxnJHrkUy5YuQ7rk37Dm0aT9nhlx4CuLn0g2y0NmRW6i9yPwJLZJXSJqB0UvFPUvQu1vA/exec";
+        <!-- กลุ่มที่ 3 (เล็ก) -->
+        <div class="card">
+            <span class="label-tag">GROUP 3: OUTLET</span>
+            <div id="group-3" class="drop-zone" data-name="GROUP 3"></div>
+        </div>
+    </main>
 
-    const FIXED_GROUP_NAMES = { 
-        1: "ห้องส่งออก", 2: "PACK A", 3: "PACK B", 4: "ห้องย่างไก่", 
-        5: "ห้องหุงข้าว", 6: "COOK1&3", 7: "COOK2", 8: "READY MEAL", 
-        9: "ห้องเบอร์เกอร์", 10: "ห้องกล่อง", 11: "ห้องเนื้อ", 12: "ห้องผัก", 
-        13: "SEASONING", 14: "ห้องล้าง สุก&ดิบ", 15: "Overhaul"
-    };
-
-    let rawSheetData = [];
-
-    // ฟังก์ชันจดจำตำแหน่งลง LocalStorage
-    function saveAllGroupsOrder() {
-        const orderData = {};
-        for (let g = 1; g <= totalGroups; g++) {
-            const el = document.getElementById(`group-${g}`);
-            if (el) {
-                // เก็บ Array ของ ID บล็อกที่เรียงอยู่ในปัจจุบัน
-                orderData[g] = Array.from(el.children).map(child => child.id);
-            }
-        }
-        localStorage.setItem('dashboard_order_v1', JSON.stringify(orderData));
-    }
-
-    async function loadSheetData() {
-        try {
-            const response = await fetch(SHEET_API_URL);
-            rawSheetData = await response.json();
-            renderDashboard();
-        } catch (error) { console.error("Fetch Error:", error); }
-    }
-
-    function renderDashboard() {
-        const container = document.getElementById('dashboard');
-        container.innerHTML = '';
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLXGpD4n0Wi2_ksjjr7L5MHWiYJR-ZDjNsem9IKn1tEFUq6xhxnnCB7epqrZQmg7jCiA/exec"; // <--- วาง URL ของ Google Apps Script ที่นี่
         
-        // 1. จัดกลุ่มข้อมูลจาก Sheet
-        const groupContents = {};
-        for (let i = 1; i <= totalGroups; i++) groupContents[i] = [];
+        // นาฬิกา
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
-        rawSheetData.forEach(item => {
-            let assignedGroupName = (item.latestGroup || item.initialGroup || "").trim();
-            let groupId = findGroupIdByName(assignedGroupName);
-            if (groupId) groupContents[groupId].push(item);
-            else {
-                item.isUnknownGroup = true;
-                groupContents[1].push(item); 
-            }
-        });
+        // ฟังก์ชันโหลดข้อมูล
+        async function loadData() {
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const data = await res.json();
+                renderBlocks(data);
+            } catch (e) { console.error("Load Error", e); }
+        }
 
-        // 2. ดึงลำดับที่เคยบันทึกไว้
-        const savedOrder = JSON.parse(localStorage.getItem('dashboard_order_v1') || '{}');
+        function renderBlocks(data) {
+            // ล้างข้อมูลเก่า
+            document.querySelectorAll('.drop-zone').forEach(z => z.innerHTML = '');
 
-        for (let g = 1; g <= totalGroups; g++) {
-            const groupDiv = document.createElement('div');
-            groupDiv.className = 'group-container';
-            groupDiv.id = `container-${g}`;
-            groupDiv.innerHTML = `<div class="group-header">${FIXED_GROUP_NAMES[g]}</div>`;
-            
-            const contentDiv = document.createElement('div');
-            const sizeClass = (g <= 3) ? 'large-group' : 'small-group';
-            contentDiv.className = `group-content ${sizeClass}`;
-            contentDiv.id = `group-${g}`;
-            contentDiv.dataset.name = FIXED_GROUP_NAMES[g];
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `block status-${item.status} ${item.isLeader ? 'leader' : ''}`;
+                div.id = item.id;
+                div.dataset.rowindex = item.rowIndex;
+                div.innerText = item.name;
 
-            // 3. เรียงลำดับข้อมูลก่อน Render
-            let itemsInGroup = groupContents[g];
-            let groupOrder = savedOrder[g] || [];
-
-            // เรียงตาม savedOrder ถ้าไม่มีใน list ให้เอาไปไว้ท้ายสุด
-            itemsInGroup.sort((a, b) => {
-                let indexA = groupOrder.indexOf(String(a.id));
-                let indexB = groupOrder.indexOf(String(b.id));
-                if (indexA === -1) indexA = 999;
-                if (indexB === -1) indexB = 999;
-                return indexA - indexB;
+                // กำหนดเป้าหมายกลุ่ม (ถ้ามี Latest ให้ใช้ Latest ถ้าไม่มีใช้ Initial)
+                const targetGroupName = item.latestGroup || item.initialGroup;
+                const targetZone = Array.from(document.querySelectorAll('.drop-zone'))
+                                     .find(z => z.dataset.name === targetGroupName);
+                
+                if (targetZone) targetZone.appendChild(div);
             });
 
-            itemsInGroup.forEach(item => contentDiv.appendChild(createBlock(item)));
-            groupDiv.appendChild(contentDiv);
-            container.appendChild(groupDiv);
+            // เปิดใช้งาน Sortable
+            setupSortable();
+        }
 
-            // 4. ตั้งค่า Sortable
-            new Sortable(contentDiv, {
-                group: 'shared',
-                animation: 150,
-                onEnd: async (evt) => {
-                    const itemEl = evt.item;
-                    const newGroupName = evt.to.dataset.name;
-                    const rowIndex = itemEl.dataset.rowindex;
-                    
-                    // บันทึกลง Sheet
-                    await updateLatestGroupInSheet(rowIndex, newGroupName);
-                    
-                    // บันทึกลำดับใหม่ลง LocalStorage
-                    saveAllGroupsOrder();
-
-                    const itemData = rawSheetData.find(d => d.id === itemEl.id);
-                    if(itemData) {
-                        itemData.isUnknownGroup = false; 
-                        applyColor(itemEl, itemData);
+        function setupSortable() {
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                new Sortable(zone, {
+                    group: 'machines',
+                    animation: 150,
+                    onEnd: function (evt) {
+                        saveOrderToSheet(evt.to); // เมื่อวางเสร็จ ให้บันทึกลำดับของกลุ่มปลายทาง
+                        if (evt.from !== evt.to) {
+                            saveOrderToSheet(evt.from); // ถ้าข้ามกลุ่ม ให้บันทึกลำดับกลุ่มต้นทางด้วย
+                        }
                     }
-                }
+                });
             });
         }
-    }
 
-    function findGroupIdByName(name) {
-        for (let id in FIXED_GROUP_NAMES) {
-            if (FIXED_GROUP_NAMES[id] === name) return id;
-        }
-        return null;
-    }
-
-    async function updateLatestGroupInSheet(rowIndex, newGroupName) {
-        try {
-            await fetch(SHEET_API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({ rowIndex, newGroupName })
+        async function saveOrderToSheet(zoneElement) {
+            const groupName = zoneElement.dataset.name;
+            const blocks = Array.from(zoneElement.children);
+            
+            // สร้างรายการอัปเดตสำหรับทุกคนในกลุ่มนี้
+            const updates = blocks.map((block, index) => {
+                return {
+                    rowIndex: block.dataset.rowindex,
+                    newGroupName: groupName,
+                    order: index + 1 // ลำดับ 1, 2, 3... ตามที่เรียงใน UI
+                };
             });
-        } catch (e) { console.error(e); }
-    }
 
-    function createBlock(item) {
-        const div = document.createElement('div');
-        div.className = `block ${item.isLeader ? 'leader' : ''}`;
-        div.id = item.id;
-        div.dataset.rowindex = item.rowIndex;
-        div.innerText = item.name;
-        applyColor(div, item);
-        return div;
-    }
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ updates: updates })
+                });
+            } catch (e) { console.error("Save Error", e); }
+        }
 
-    function applyColor(el, item) {
-        el.classList.remove('status-green', 'status-red', 'status-yellow', 'status-unknown');
-        if (item.isUnknownGroup) { el.classList.add('status-unknown'); return; }
-        const s = item.status;
-        if (s === 0 || s === "0") el.classList.add('status-green');
-        else if (s === 1 || s === "1") el.classList.add('status-yellow');
-        else if (s === 2 || s === "2") el.classList.add('status-red');
-    }
-
-    function checkAuthBtn(input, btnId) { document.getElementById(btnId).style.display = input.value.length > 0 ? 'block' : 'none'; }
-    function unlockApp() {
-        if (document.getElementById('mainPass').value === MASTER_KEY) {
-            sessionStorage.setItem('isLoggedIn', 'true');
-            document.getElementById('authOverlay').style.display = 'none';
-        } else alert('Password Incorrect');
-    }
-
-    window.onload = () => {
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') document.getElementById('authOverlay').style.display = 'flex';
-        loadSheetData();
-        setInterval(() => { 
-            const now = new Date();
-            document.getElementById('liveClock').innerText = now.toLocaleString('th-TH'); 
-        }, 1000);
-        // Refresh ข้อมูลทุก 30 วินาทีเพื่ออัปเดตสถานะสี
-        setInterval(loadSheetData, 30000);
-    };
-</script>
+        window.onload = loadData;
+    </script>
 </body>
 </html>
