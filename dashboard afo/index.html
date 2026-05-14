@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Machine Monitoring - Clean UI</title>
+    <title>Symmetry Machine Monitoring - Clean UI V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -17,19 +17,50 @@
             --card-red: #c62828;
         }
         
-        html, body { height: 100vh; margin: 0; overflow: hidden; background-color: #000; color: #fff; }
+        /* ป้องกันการเลื่อนในระดับ Body */
+        html, body { 
+            height: 100vh; 
+            margin: 0; 
+            padding: 0;
+            overflow: hidden !important; 
+            background-color: #000; 
+            color: #fff; 
+        }
         
         .dashboard-container {
             display: grid;
             grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
-            gap: 1rem; height: calc(100vh - 4rem); padding: 1rem;
+            gap: 1rem; 
+            height: calc(100vh - 4rem); 
+            padding: 1rem;
+            overflow: hidden;
         }
         
-        .card { background: #111; border: 1px solid #334155; border-radius: 0.75rem; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .card { 
+            background: #111; 
+            border: 1px solid #334155; 
+            border-radius: 0.75rem; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden !important; 
+        }
         
-        .label-tag { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.7rem; color: #94a3b8; background: rgba(0,0,0,0.8); padding: 2px 8px; border-radius: 4px; z-index: 10; }
+        .label-tag { 
+            position: absolute; 
+            top: 0.5rem; 
+            left: 0.5rem; 
+            font-size: 0.7rem; 
+            color: #94a3b8; 
+            background: rgba(0,0,0,0.8); 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            z-index: 10; 
+        }
         
-        /* พื้นที่ลากวาง และการตั้งค่าซ่อน Scrollbar แต่เลื่อนได้ */
+        /* ------------------------------------------------------------
+           ส่วนที่แก้ไข: ซ่อน Scrollbar แบบเด็ดขาดสำหรับทุก Browser
+           ------------------------------------------------------------ */
         .drop-zone { 
             flex-grow: 1; 
             padding: 2.5rem 0.5rem 0.5rem; 
@@ -37,19 +68,23 @@
             grid-template-columns: repeat(4, 1fr); 
             gap: 0.5rem; 
             align-content: start; 
-            overflow-y: auto;
             
-            /* ซ่อน Scrollbar สำหรับ Chrome, Safari และ Opera */
-            -webkit-overflow-scrolling: touch;
+            /* อนุญาตให้เลื่อนได้ตามปกติ */
+            overflow-y: scroll !important; 
+            
+            /* ซ่อน Scrollbar สำหรับ Firefox */
+            scrollbar-width: none !important;
+            /* ซ่อน Scrollbar สำหรับ IE และ Edge */
+            -ms-overflow-style: none !important;
         }
 
+        /* ซ่อน Scrollbar สำหรับ Chrome, Safari, Edge (Blink) และ Opera */
         .drop-zone::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
-        }
-
-        .drop-zone {
-            -ms-overflow-style: none;  /* IE และ Edge */
-            scrollbar-width: none;  /* Firefox */
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+            -webkit-appearance: none !important;
         }
 
         .drop-zone.large { grid-template-columns: repeat(6, 1fr); }
@@ -72,19 +107,16 @@
     </header>
 
     <main class="dashboard-container">
-        <!-- กลุ่มที่ 1 -->
         <div class="card">
             <span class="label-tag">GROUP 1: INLET</span>
             <div id="group-1" class="drop-zone large" data-name="GROUP 1"></div>
         </div>
 
-        <!-- กลุ่มที่ 2 -->
         <div class="card">
             <span class="label-tag">GROUP 2: PROCESS</span>
             <div id="group-2" class="drop-zone large" data-name="GROUP 2"></div>
         </div>
 
-        <!-- กลุ่มที่ 3 -->
         <div class="card">
             <span class="label-tag">GROUP 3: OUTLET</span>
             <div id="group-3" class="drop-zone" data-name="GROUP 3"></div>
