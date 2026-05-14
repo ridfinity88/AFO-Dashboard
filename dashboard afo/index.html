@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Machine Dashboard - No Scrollbar</title>
+    <title>Symmetry Machine Dashboard - Enterprise Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* [ ส่วนควบคุมขนาด Layout ] */
         :root {
             --width-col-left: 1.0fr;
             --width-col-center: 1.2fr;
@@ -24,7 +25,61 @@
             overflow: hidden; 
             background-color: #000000; 
             color: #f8fafc; 
+            font-family: sans-serif;
         }
+
+        /* ------------------------------------------------------------
+           เทคนิคซ่อน Scrollbar แบบ 100% (Masking)
+           ------------------------------------------------------------ */
+        .card { 
+            background-color: #000000; 
+            border: 1px solid #334155; 
+            border-radius: 0.75rem; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden !important; /* เป็นหน้าต่างบังส่วนเกิน */
+            width: 100%;
+            height: 100%;
+        }
+
+        .scroll-mask {
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: calc(100% + 30px); /* ดัน Scrollbar ออกไปนอกขอบ Card */
+            padding-right: 30px;       /* ดันเนื้อหากลับมาให้พอดี */
+            scrollbar-width: none;     /* Firefox */
+            -ms-overflow-style: none;  /* IE/Edge */
+        }
+
+        .scroll-mask::-webkit-scrollbar {
+            display: none !important; /* Chrome/Safari/Edge */
+        }
+
+        /* ------------------------------------------------------------
+           Login Overlay
+           ------------------------------------------------------------ */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: #111827;
+            border: 1px solid #3b82f6;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            width: 350px;
+            text-align: center;
+        }
+
+        /* ------------------------------------------------------------ */
 
         .dashboard-container {
             display: grid;
@@ -34,57 +89,10 @@
             padding: 0 1rem 1rem 1rem;
         }
 
-        .center-panel {
-            display: grid;
-            grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
-            gap: 1rem;
-        }
+        .center-panel { display: grid; grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2); gap: 1rem; }
+        .right-panel { display: grid; grid-template-rows: var(--height-chart-top) var(--height-chart-bottom); gap: 1rem; }
 
-        .right-panel {
-            display: grid;
-            grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
-            gap: 1rem;
-        }
-
-        /* ------------------------------------------------------------
-           [ จุดแก้ไขสำคัญ ] ซ่อน Scrollbar โดยการใช้ Masking
-           ------------------------------------------------------------ */
-        .card { 
-            background-color: #000000; 
-            border: 1px solid #334155; 
-            border-radius: 0.75rem; 
-            position: relative; 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden !important; /* บังส่วนที่เกินออกมา */
-            min-height: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Wrapper ที่ยอมให้ Scroll ได้ แต่จะถูก Card บังแถบเลื่อนไว้ */
-        .scroll-mask {
-            flex-grow: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            width: calc(100% + 20px); /* ขยายให้กว้างกว่า Card เพื่อดัน Scrollbar ออกไป */
-            padding-right: 20px;       /* ดันเนื้อหากลับมาให้พอดี */
-            scrollbar-width: none;     /* สำหรับ Firefox */
-            -ms-overflow-style: none;  /* สำหรับ IE/Edge */
-        }
-
-        .scroll-mask::-webkit-scrollbar {
-            display: none !important; /* สำหรับ Chrome/Safari */
-            width: 0 !important;
-        }
-
-        /* ------------------------------------------------------------ */
-
-        .machine-img {
-            width: 90%;
-            height: 85%;
-            object-fit: contain;
-        }
+        .machine-img { width: 90%; height: 85%; object-fit: contain; }
 
         .label-tag {
             position: absolute;
@@ -92,43 +100,44 @@
             font-size: 0.7rem;
             color: #94a3b8;
             font-weight: bold;
-            z-index: 20;
-            background: rgba(15, 23, 42, 0.9);
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
             padding: 2px 8px;
             border-radius: 4px;
             text-transform: uppercase;
         }
 
-        .chart-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-        }
+        .chart-container { position: relative; width: 100px; height: 100px; }
         .chart-value {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: #10b981;
+            font-weight: 800; font-size: 0.9rem; color: #10b981;
         }
     </style>
 </head>
 <body class="flex flex-col">
 
+    <!-- หน้าต่างใส่รหัสเมื่อเริ่มโปรแกรม -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 class="text-blue-400 text-xl font-bold mb-6">SYSTEM AUTHENTICATION</h2>
+            <input type="password" id="password-input" placeholder="Enter Access Code" 
+                   class="w-full bg-black border border-slate-700 text-white p-3 rounded mb-4 focus:outline-none focus:border-blue-500 text-center">
+            <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                LOGIN (ENTER)
+            </button>
+            <p id="error-msg" class="text-red-500 text-xs mt-3 hidden">Invalid Code. Please try again.</p>
+        </div>
+    </div>
+
     <header class="flex justify-between items-center h-14 px-6 flex-shrink-0">
         <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">Machine Monitoring System</h1>
-        <div class="flex items-center gap-4">
-            <!-- เพิ่มช่องกรอกรหัส -->
-            <input type="password" id="auth-code" placeholder="Enter Code" 
-                   class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-32">
-            <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
-        </div>
+        <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
     </header>
 
     <main class="dashboard-container">
         
-        <!-- ⑤ DATA (ซ่อน Scrollbar แล้ว) -->
+        <!-- ⑤ DATA (ซ่อน Scrollbar กริบ) -->
         <div class="card p-4">
             <span class="label-tag">⑤ DATA</span>
             <div class="scroll-mask mt-8">
@@ -141,14 +150,12 @@
             </div>
         </div>
 
-        <!-- CENTER PANEL -->
         <div class="center-panel">
             <div class="card"><span class="label-tag">Center View</span><img src="cen.png" alt=" " class="machine-img"></div>
             <div class="card"><span class="label-tag">① MACHINE INLET</span><img src="in.png" alt=" " class="machine-img"></div>
             <div class="card"><span class="label-tag">② MACHINE OUTLET</span><img src="out.png" alt=" " class="machine-img"></div>
         </div>
 
-        <!-- RIGHT PANEL -->
         <div class="right-panel">
             <div class="card p-4 !justify-around">
                 <span class="label-tag">③ STATUS RATIO</span>
@@ -186,31 +193,45 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
         
-        // ฟังก์ชันนาฬิกา
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+        // 1. ระบบ Login และการกด Enter
+        const loginOverlay = document.getElementById('login-overlay');
+        const passwordInput = document.getElementById('password-input');
+        const loginBtn = document.getElementById('login-btn');
+        const errorMsg = document.getElementById('error-msg');
 
-        // ระบบกด Enter แทนการคลิก (ตัวอย่างการส่งรหัส)
-        document.getElementById('auth-code').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const code = this.value;
-                console.log("Processing code:", code);
-                // คุณสามารถใส่ Logic การเช็ครหัส หรือจำลองการคลิกปุ่มที่นี่
-                alert("รับข้อมูลรหัส: " + code); 
-                this.value = ''; // ล้างช่องหลังกด
+        function handleLogin() {
+            // แก้ไข '1234' เป็นรหัสที่คุณต้องการ
+            if (passwordInput.value === '1234') { 
+                loginOverlay.classList.add('hidden');
+                fetchData(); // เริ่มดึงข้อมูลเมื่อ Login ผ่าน
+            } else {
+                errorMsg.classList.remove('hidden');
+                passwordInput.value = '';
+                passwordInput.focus();
             }
+        }
+
+        // ดักจับปุ่ม Enter ในช่องรหัส
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
         });
 
-        // Setup Charts (เหมือนเดิม)
+        // ดักจับการคลิกปุ่ม Login
+        loginBtn.addEventListener('click', handleLogin);
+
+        // 2. ระบบนาฬิกา
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        // 3. ตั้งค่ากราฟ (เหมือนเดิม)
         const pieChart1 = new Chart(document.getElementById('pieChart1'), {
             type: 'doughnut',
-            data: { datasets: [{ data: [85, 15], backgroundColor: ['#10b981', '#1e293b'], borderWidth: 0 }] },
+            data: { datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#334155', '#1e293b'], borderWidth: 0 }] },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
         });
 
         const pieChart2 = new Chart(document.getElementById('pieChart2'), {
             type: 'doughnut',
-            data: { datasets: [{ data: [60, 40], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0 }] },
+            data: { datasets: [{ data: [60, 30, 10], backgroundColor: ['#3b82f6', '#334155', '#1e293b'], borderWidth: 0 }] },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
         });
 
@@ -218,11 +239,15 @@
             type: 'line',
             data: {
                 labels: ['1','2','3','4','5'],
-                datasets: [{ label: 'S1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 }]
+                datasets: [
+                    { label: 'S1', data: [10, 25, 15, 30, 20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'S2', data: [15, 10, 25, 20, 30], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2 }
+                ]
             },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
         });
 
+        // 4. ดึงข้อมูลจาก API
         async function fetchData() {
             try {
                 const response = await fetch(SCRIPT_URL);
@@ -238,11 +263,17 @@
                     </tr>`;
                 });
                 document.getElementById('data-table').innerHTML = html;
+                
+                // อัปเดตตัวเลขวงกลม
+                const effValue = data.machine1.temp;
+                document.getElementById('val-p1').innerText = effValue + "%";
+                pieChart1.data.datasets[0].data = [effValue, (100-effValue)*0.7, (100-effValue)*0.3];
+                pieChart1.update();
             } catch (e) { console.error(e); }
         }
 
-        fetchData();
         setInterval(fetchData, 10000);
+        window.onload = () => { passwordInput.focus(); }; // Focus ช่องรหัสทันทีที่เปิด
     </script>
 </body>
 </html>
