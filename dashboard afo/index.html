@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Machine Monitoring - Persistent Order</title>
+    <title>Symmetry Machine Monitoring - Clean UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -16,17 +16,42 @@
             --card-yellow: #fbc02d;
             --card-red: #c62828;
         }
+        
         html, body { height: 100vh; margin: 0; overflow: hidden; background-color: #000; color: #fff; }
+        
         .dashboard-container {
             display: grid;
             grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right);
             gap: 1rem; height: calc(100vh - 4rem); padding: 1rem;
         }
+        
         .card { background: #111; border: 1px solid #334155; border-radius: 0.75rem; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        
         .label-tag { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.7rem; color: #94a3b8; background: rgba(0,0,0,0.8); padding: 2px 8px; border-radius: 4px; z-index: 10; }
         
-        /* พื้นที่ลากวาง */
-        .drop-zone { flex-grow: 1; padding: 2.5rem 0.5rem 0.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; align-content: start; overflow-y: auto; }
+        /* พื้นที่ลากวาง และการตั้งค่าซ่อน Scrollbar แต่เลื่อนได้ */
+        .drop-zone { 
+            flex-grow: 1; 
+            padding: 2.5rem 0.5rem 0.5rem; 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 0.5rem; 
+            align-content: start; 
+            overflow-y: auto;
+            
+            /* ซ่อน Scrollbar สำหรับ Chrome, Safari และ Opera */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .drop-zone::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+
+        .drop-zone {
+            -ms-overflow-style: none;  /* IE และ Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
         .drop-zone.large { grid-template-columns: repeat(6, 1fr); }
 
         .block { background: #424242; border-radius: 4px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; cursor: grab; text-align: center; padding: 2px; }
@@ -35,6 +60,8 @@
         .status-0 { background-color: var(--card-green) !important; }
         .status-1 { background-color: var(--card-yellow) !important; color: #000; }
         .status-2 { background-color: var(--card-red) !important; }
+        
+        .ghost { opacity: 0.4; background: #3b82f6 !important; }
     </style>
 </head>
 <body class="flex flex-col">
@@ -45,19 +72,19 @@
     </header>
 
     <main class="dashboard-container">
-        <!-- กลุ่มที่ 1 (ใหญ่) -->
+        <!-- กลุ่มที่ 1 -->
         <div class="card">
             <span class="label-tag">GROUP 1: INLET</span>
             <div id="group-1" class="drop-zone large" data-name="GROUP 1"></div>
         </div>
 
-        <!-- กลุ่มที่ 2 (ใหญ่) -->
+        <!-- กลุ่มที่ 2 -->
         <div class="card">
             <span class="label-tag">GROUP 2: PROCESS</span>
             <div id="group-2" class="drop-zone large" data-name="GROUP 2"></div>
         </div>
 
-        <!-- กลุ่มที่ 3 (เล็ก) -->
+        <!-- กลุ่มที่ 3 -->
         <div class="card">
             <span class="label-tag">GROUP 3: OUTLET</span>
             <div id="group-3" class="drop-zone" data-name="GROUP 3"></div>
@@ -65,12 +92,10 @@
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLXGpD4n0Wi2_ksjjr7L5MHWiYJR-ZDjNsem9IKn1tEFUq6xhxnnCB7epqrZQmg7jCiA/exec"; // <--- วาง URL ของ Google Apps Script ที่นี่
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLXGpD4n0Wi2_ksjjr7L5MHWiYJR-ZDjNsem9IKn1tEFUq6xhxnnCB7epqrZQmg7jCiA/exec";
         
-        // นาฬิกา
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
-        // ฟังก์ชันโหลดข้อมูล
         async function loadData() {
             try {
                 const res = await fetch(SCRIPT_URL);
@@ -80,7 +105,6 @@
         }
 
         function renderBlocks(data) {
-            // ล้างข้อมูลเก่า
             document.querySelectorAll('.drop-zone').forEach(z => z.innerHTML = '');
 
             data.forEach(item => {
@@ -90,7 +114,6 @@
                 div.dataset.rowindex = item.rowIndex;
                 div.innerText = item.name;
 
-                // กำหนดเป้าหมายกลุ่ม (ถ้ามี Latest ให้ใช้ Latest ถ้าไม่มีใช้ Initial)
                 const targetGroupName = item.latestGroup || item.initialGroup;
                 const targetZone = Array.from(document.querySelectorAll('.drop-zone'))
                                      .find(z => z.dataset.name === targetGroupName);
@@ -98,7 +121,6 @@
                 if (targetZone) targetZone.appendChild(div);
             });
 
-            // เปิดใช้งาน Sortable
             setupSortable();
         }
 
@@ -107,10 +129,11 @@
                 new Sortable(zone, {
                     group: 'machines',
                     animation: 150,
+                    ghostClass: 'ghost',
                     onEnd: function (evt) {
-                        saveOrderToSheet(evt.to); // เมื่อวางเสร็จ ให้บันทึกลำดับของกลุ่มปลายทาง
+                        saveOrderToSheet(evt.to);
                         if (evt.from !== evt.to) {
-                            saveOrderToSheet(evt.from); // ถ้าข้ามกลุ่ม ให้บันทึกลำดับกลุ่มต้นทางด้วย
+                            saveOrderToSheet(evt.from);
                         }
                     }
                 });
@@ -121,12 +144,11 @@
             const groupName = zoneElement.dataset.name;
             const blocks = Array.from(zoneElement.children);
             
-            // สร้างรายการอัปเดตสำหรับทุกคนในกลุ่มนี้
             const updates = blocks.map((block, index) => {
                 return {
                     rowIndex: block.dataset.rowindex,
                     newGroupName: groupName,
-                    order: index + 1 // ลำดับ 1, 2, 3... ตามที่เรียงใน UI
+                    order: index + 1
                 };
             });
 
