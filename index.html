@@ -307,14 +307,16 @@
         
         loadSheetData();
 
-        // นาฬิกา
+        // นาฬิกาแบบใหม่: แสดง 15/05/2026 14:30:05
         setInterval(() => { 
             const now = new Date();
-            document.getElementById('liveClock').innerText = now.toLocaleTimeString('th-TH'); 
+            const dateStr = now.toLocaleDateString('en-GB'); // แสดงผลเป็น DD/MM/YYYY
+            const timeStr = now.toLocaleTimeString('th-TH');
+            document.getElementById('liveClock').innerText = `${dateStr} ${timeStr}`; 
         }, 1000);
 
-        // Auto Refresh ข้อมูลทุก 10 วินาที
-        setInterval(loadSheetData, 57000);
+        // Auto Refresh ข้อมูลทุก 10 วินาที (เปลี่ยนตัวเลข 10000 เป็นเวลาที่ต้องการ)
+        setInterval(loadSheetData, 10000);
     };
 </script>
 </body>
