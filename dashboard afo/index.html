@@ -7,18 +7,16 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-
         :root {
             --width-col-left: 1.0fr;
             --width-col-center: 1.2fr;
             --width-col-right: 0.6fr;
-
             --height-cen-view: 0.6fr;
             --height-machine-1: 0.8fr;
             --height-machine-2: 0.8fr;
-
             --height-chart-top: 1fr;
             --height-chart-bottom: 1fr;
         }
@@ -41,10 +39,14 @@
             justify-content: center;
             align-items: center;
             background: #000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
         }
 
         .login-box {
-            width: 320px;
+            width: 340px;
             background: #0f172a;
             border: 1px solid #334155;
             border-radius: 16px;
@@ -52,33 +54,64 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
         .login-box h2 {
             text-align: center;
             color: #60a5fa;
             margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* Input Container สำหรับวางไอคอน */
+        .password-container {
+            position: relative;
+            width: 100%;
         }
 
         .login-box input {
-            height: 42px;
+            width: 100%;
+            height: 46px;
             border-radius: 8px;
             border: 1px solid #334155;
             background: #020617;
             color: white;
-            padding: 0 12px;
+            padding: 0 45px 0 12px; /* เผื่อที่ด้านขวาสำหรับไอคอน */
             font-size: 16px;
             outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-box input:focus {
+            border-color: #2563eb;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-password:hover {
+            color: #f8fafc;
         }
 
         .login-box button {
-            height: 42px;
+            height: 46px;
             border: none;
             border-radius: 8px;
             background: #2563eb;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         .login-box button:hover {
@@ -90,10 +123,10 @@
             font-size: 13px;
             text-align: center;
             display: none;
+            margin-top: -8px;
         }
 
         /* DASHBOARD */
-
         #dashboardPage {
             display: none;
             width: 100%;
@@ -108,17 +141,8 @@
             padding: 0 1rem 1rem 1rem;
         }
 
-        .center-panel {
-            display: grid;
-            grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2);
-            gap: 1rem;
-        }
-
-        .right-panel {
-            display: grid;
-            grid-template-rows: var(--height-chart-top) var(--height-chart-bottom);
-            gap: 1rem;
-        }
+        .center-panel { display: grid; grid-template-rows: var(--height-cen-view) var(--height-machine-1) var(--height-machine-2); gap: 1rem; }
+        .right-panel { display: grid; grid-template-rows: var(--height-chart-top) var(--height-chart-bottom); gap: 1rem; }
 
         .card {
             background-color: #000000;
@@ -129,21 +153,16 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 0;
             width: 100%;
             height: 100%;
+            min-height: 0;
         }
 
-        .machine-img {
-            width: 90%;
-            height: 85%;
-            object-fit: contain;
-        }
+        .machine-img { width: 90%; height: 85%; object-fit: contain; }
 
         .label-tag {
             position: absolute;
-            top: 0.75rem;
-            left: 0.75rem;
+            top: 0.75rem; left: 0.75rem;
             font-size: 0.7rem;
             color: #94a3b8;
             font-weight: bold;
@@ -154,377 +173,191 @@
             text-transform: uppercase;
         }
 
-        .chart-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-        }
-
+        .chart-container { position: relative; width: 100px; height: 100px; }
         .chart-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: #10b981;
+            font-weight: 800; font-size: 0.9rem; color: #10b981;
         }
-
     </style>
 </head>
 
 <body>
 
-    <!-- LOGIN -->
     <div id="loginPage">
-
         <div class="login-box">
-
-            <h2>LOGIN</h2>
-
-            <input
-                type="password"
-                id="passwordInput"
-                placeholder="Enter Password"
-            >
-
-            <button id="loginBtn">
-                Login
-            </button>
-
-            <div class="error-text" id="errorText">
-                Incorrect Password
+            <h2>SYSTEM LOGIN</h2>
+            
+            <div class="password-container">
+                <input type="password" id="passwordInput" placeholder="Enter Password">
+                <div class="toggle-password" id="togglePassword">
+                    <i data-lucide="eye" id="eyeIcon"></i>
+                </div>
             </div>
 
+            <button id="loginBtn">Login</button>
+            <div class="error-text" id="errorText">Incorrect Password</div>
         </div>
-
     </div>
 
-    <!-- DASHBOARD -->
     <div id="dashboardPage" class="flex flex-col">
-
         <header class="flex justify-between items-center h-14 px-6 flex-shrink-0">
-            <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">
-                Machine Monitoring System
-            </h1>
-
-            <div id="clock" class="text-lg font-mono text-slate-400">
-                00:00:00
-            </div>
+            <h1 class="text-xl font-bold text-blue-400 uppercase tracking-tight">Machine Monitoring System</h1>
+            <div id="clock" class="text-lg font-mono text-slate-400">00:00:00</div>
         </header>
 
         <main class="dashboard-container">
-
-            <!-- DATA -->
             <div class="card !justify-start p-4 overflow-hidden">
-
                 <span class="label-tag">⑤ DATA</span>
-
                 <div class="w-full mt-8">
-
                     <table class="w-full text-[11px] text-left">
-
                         <thead class="text-blue-300 border-b border-slate-700">
-                            <tr>
-                                <th>Name</th>
-                                <th class="text-center">T</th>
-                                <th class="text-center">P</th>
-                                <th class="text-right">S</th>
-                            </tr>
+                            <tr><th>Name</th><th class="text-center">T</th><th class="text-center">P</th><th class="text-right">S</th></tr>
                         </thead>
-
                         <tbody id="data-table"></tbody>
-
                     </table>
-
                 </div>
-
             </div>
 
-            <!-- CENTER PANEL -->
             <div class="center-panel">
-
-                <div class="card">
-                    <span class="label-tag">Center View</span>
-                    <img src="cen.png" class="machine-img">
-                </div>
-
-                <div class="card">
-                    <span class="label-tag">① MACHINE INLET</span>
-                    <img src="in.png" class="machine-img">
-                </div>
-
-                <div class="card">
-                    <span class="label-tag">② MACHINE OUTLET</span>
-                    <img src="out.png" class="machine-img">
-                </div>
-
+                <div class="card"><span class="label-tag">Center View</span><img src="cen.png" class="machine-img"></div>
+                <div class="card"><span class="label-tag">① MACHINE INLET</span><img src="in.png" class="machine-img"></div>
+                <div class="card"><span class="label-tag">② MACHINE OUTLET</span><img src="out.png" class="machine-img"></div>
             </div>
 
-            <!-- RIGHT PANEL -->
             <div class="right-panel">
-
                 <div class="card p-4 !justify-around">
-
                     <span class="label-tag">③ STATUS RATIO</span>
-
                     <div class="flex items-center w-full px-2 mt-4">
-
                         <div class="chart-container flex-shrink-0">
                             <canvas id="pieChart1"></canvas>
-                            <div id="val-p1" class="chart-value text-green-400">
-                                85%
-                            </div>
+                            <div id="val-p1" class="chart-value text-green-400">85%</div>
                         </div>
-
                     </div>
-
                     <div class="flex items-center w-full px-2">
-
                         <div class="chart-container flex-shrink-0">
                             <canvas id="pieChart2"></canvas>
-                            <div id="val-p2" class="chart-value text-blue-400">
-                                60%
-                            </div>
+                            <div id="val-p2" class="chart-value text-blue-400">60%</div>
                         </div>
-
                     </div>
-
                 </div>
-
                 <div class="card p-2">
-
                     <span class="label-tag">④ PRODUCTION</span>
-
-                    <div class="w-full h-full pt-8">
-                        <canvas id="lineChart"></canvas>
-                    </div>
-
+                    <div class="w-full h-full pt-8"><canvas id="lineChart"></canvas></div>
                 </div>
-
             </div>
-
         </main>
-
     </div>
 
     <script>
+        // เริ่มต้นใช้งาน Icons
+        lucide.createIcons();
 
         // =========================
         // LOGIN SYSTEM
         // =========================
-
         const PASSWORD = "1234";
-
         const passwordInput = document.getElementById('passwordInput');
         const loginBtn = document.getElementById('loginBtn');
         const loginPage = document.getElementById('loginPage');
         const dashboardPage = document.getElementById('dashboardPage');
         const errorText = document.getElementById('errorText');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
 
+        // ฟังก์ชัน Login
         function login() {
-
             if (passwordInput.value === PASSWORD) {
-
                 loginPage.style.display = "none";
                 dashboardPage.style.display = "flex";
-
+                fetchData(); // เริ่มดึงข้อมูล
             } else {
-
                 errorText.style.display = "block";
                 passwordInput.value = "";
                 passwordInput.focus();
-
             }
-
         }
 
-        // กดปุ่ม Login
+        // 1. กดปุ่ม Login ด้วยเมาส์
         loginBtn.addEventListener('click', login);
 
-        // ===== จุดที่เพิ่ม =====
-        // กด Enter เพื่อ Login ได้
+        // 2. กด Enter เพื่อ Login
         passwordInput.addEventListener('keydown', function(event) {
-
             if (event.key === 'Enter') {
                 login();
             }
+        });
 
+        // 3. เปิด-ปิด การมองเห็นรหัสผ่าน
+        togglePassword.addEventListener('click', function() {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            // เปลี่ยนไอคอน
+            eyeIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+            lucide.createIcons(); // รีเฟรชไอคอน
         });
 
         // =========================
-        // DASHBOARD
+        // DASHBOARD SYSTEM
         // =========================
-
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYeA5b5d9MMrpWhi1K19O5fqn5jliHDMUg0aCHdIfzlGtCTEQB33BrqgCzImSamZX8Bg/exec";
 
         setInterval(() => {
-            document.getElementById('clock').innerText =
-                new Date().toLocaleTimeString();
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }, 1000);
 
-        // PIE CHART 1
         const pieChart1 = new Chart(document.getElementById('pieChart1'), {
-
             type: 'doughnut',
-
-            data: {
-                datasets: [{
-                    data: [85, 10, 5],
-                    backgroundColor: ['#10b981', '#334155', '#1e293b'],
-                    borderWidth: 0
-                }]
-            },
-
-            options: {
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                cutout: '80%'
-            }
-
+            data: { datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#334155', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
         });
 
-        // PIE CHART 2
         const pieChart2 = new Chart(document.getElementById('pieChart2'), {
-
             type: 'doughnut',
-
-            data: {
-                datasets: [{
-                    data: [60, 30, 10],
-                    backgroundColor: ['#3b82f6', '#334155', '#1e293b'],
-                    borderWidth: 0
-                }]
-            },
-
-            options: {
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                cutout: '80%'
-            }
-
+            data: { datasets: [{ data: [60, 30, 10], backgroundColor: ['#3b82f6', '#334155', '#1e293b'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '80%' }
         });
 
-        // LINE CHART
         const lineChart = new Chart(document.getElementById('lineChart'), {
-
             type: 'line',
-
             data: {
-
                 labels: ['1','2','3','4','5'],
-
                 datasets: [
-
-                    {
-                        label: 'S1',
-                        data: [10,25,15,30,20],
-                        borderColor: '#3b82f6',
-                        tension: 0.4,
-                        pointRadius: 0,
-                        borderWidth: 2
-                    },
-
-                    {
-                        label: 'S2',
-                        data: [15,10,25,20,30],
-                        borderColor: '#10b981',
-                        tension: 0.4,
-                        pointRadius: 0,
-                        borderWidth: 2
-                    }
-
+                    { label: 'S1', data: [10,25,15,30,20], borderColor: '#3b82f6', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'S2', data: [15,10,25,20,30], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2 }
                 ]
-
             },
-
-            options: {
-
-                maintainAspectRatio: false,
-
-                plugins: {
-                    legend: { display: false }
-                },
-
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
-                }
-
-            }
-
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
         });
 
         async function fetchData() {
-
             try {
-
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-
                 let html = "";
-
                 data.table.forEach(item => {
-
-                    const statusColor =
-                        item.status === 'Running'
-                        ? 'text-green-400'
-                        : 'text-amber-400';
-
+                    const statusColor = item.status === 'Running' ? 'text-green-400' : 'text-amber-400';
                     html += `
                     <tr class="border-b border-slate-800/50">
-
-                        <td class="py-2 font-bold text-slate-400">
-                            ${item.machine}
-                        </td>
-
-                        <td class="py-2 text-lg text-center text-blue-400 font-bold">
-                            ${item.temp}
-                        </td>
-
-                        <td class="py-2 text-lg text-center text-emerald-400 font-bold">
-                            ${item.pressure}
-                        </td>
-
-                        <td class="py-2 text-right font-bold ${statusColor}">
-                            ${item.status.charAt(0)}
-                        </td>
-
+                        <td class="py-2 font-bold text-slate-400">${item.machine}</td>
+                        <td class="py-2 text-lg text-center text-blue-400 font-bold">${item.temp}</td>
+                        <td class="py-2 text-lg text-center text-emerald-400 font-bold">${item.pressure}</td>
+                        <td class="py-2 text-right font-bold ${statusColor}">${item.status.charAt(0)}</td>
                     </tr>`;
                 });
-
                 document.getElementById('data-table').innerHTML = html;
-
                 const effValue = data.machine1.temp;
-
-                document.getElementById('val-p1').innerText =
-                    effValue + "%";
-
-                pieChart1.data.datasets[0].data = [
-                    effValue,
-                    (100-effValue)*0.7,
-                    (100-effValue)*0.3
-                ];
-
+                document.getElementById('val-p1').innerText = effValue + "%";
+                pieChart1.data.datasets[0].data = [effValue, (100-effValue)*0.7, (100-effValue)*0.3];
                 pieChart1.update();
-
-            } catch (e) {
-
-                console.error(e);
-
-            }
-
+            } catch (e) { console.error(e); }
         }
 
-        fetchData();
-
         setInterval(fetchData, 10000);
-
+        
+        // Auto focus เมื่อเปิดหน้า
+        window.onload = () => passwordInput.focus();
     </script>
-
 </body>
 </html>
