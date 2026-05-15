@@ -20,7 +20,6 @@
             --card-yellow: #fbc02d;
             --text-color: #fff;
             --accent-blue: #2196F3;
-            --glass-bg: rgba(255, 255, 255, 0.1);
         }
 
         * { box-sizing: border-box; }
@@ -84,16 +83,15 @@
         .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
         .status-unknown { background-color: #fff !important; color: #000 !important; }
 
-        /* Auth & Info Modal Styles */
+        /* Overlay & Modals */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: #222; padding: 30px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(0); transition: 0.3s; }
-        
-        /* Popup Card Specific */
-        .info-card { border-top: 4px solid var(--accent-blue); }
-        .info-card h2 { margin: 0 0 20px 0; font-size: 1.5rem; color: #fff; }
+        .modal { background: #222; padding: 30px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
         .input-group { position: relative; width: 100%; margin: 15px 0; }
-        input[type="password"] { width: 100%; padding: 12px; background: #333; border: 1px solid #555; color: white; text-align: center; border-radius: 4px; outline: none; }
+        input[type="password"], input[type="text"] { width: 100%; padding: 12px 45px 12px 12px; background: #333; border: 1px solid #555; color: white; text-align: center; border-radius: 4px; outline: none; }
+        
+        .eye-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #aaa; font-size: 1.2rem; }
+
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--accent-blue); color: white; transition: 0.2s; margin-bottom: 10px; }
         .btn-action:hover { background: #1976D2; transform: translateY(-2px); }
         .btn-close { background: #444; color: #ccc; font-size: 0.8rem; padding: 8px; border: none; width: 100%; border-radius: 4px; cursor: pointer; }
@@ -115,15 +113,17 @@
         <h3 style="margin-top:0;">Access Required</h3>
         <div class="input-group">
             <input type="password" id="mainPass" placeholder="Enter Password" onkeypress="handleEnter(event)">
+            <button type="button" class="eye-btn" onclick="togglePass()">
+                <span id="eyeIcon">👁️</span>
+            </button>
         </div>
         <button class="btn-action" onclick="unlockApp()">LOGIN</button>
     </div>
 </div>
 
 <div id="infoOverlay" class="overlay" onclick="closeInfo(event)">
-    <div class="modal info-card" onclick="event.stopPropagation()">
-        <div id="popupColorBar" style="height: 5px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 12px 12px 0 0;"></div>
-        <h2 id="popupName">Name</h2>
+    <div class="modal" onclick="event.stopPropagation()">
+        <h2 id="popupName" style="margin-bottom: 25px;">Name</h2>
         <button id="dashboardBtn" class="btn-action" onclick="goToDashboard()">Dashboard</button>
         <button class="btn-close" onclick="document.getElementById('infoOverlay').style.display='none'">CLOSE</button>
     </div>
@@ -143,12 +143,25 @@
 
     let rawSheetData = [];
     let isInitialLoad = true;
-    let currentSelectedId = null;
 
-    // --- AUTH FUNCTIONS ---
+    // --- ฟังก์ชัน Toggle Password (เอากลับมาตามคำขอ) ---
+    function togglePass() {
+        const input = document.getElementById('mainPass');
+        const icon = document.getElementById('eyeIcon');
+        if (input.type === "password") {
+            input.type = "text";
+            icon.innerText = "🙈";
+        } else {
+            input.type = "password";
+            icon.innerText = "👁️";
+        }
+    }
+
     function handleEnter(e) { if (e.key === 'Enter') unlockApp(); }
+    
     function unlockApp() {
-        if (document.getElementById('mainPass').value === MASTER_KEY) {
+        const pass = document.getElementById('mainPass').value;
+        if (pass === MASTER_KEY) {
             sessionStorage.setItem('isLoggedIn', 'true');
             document.getElementById('authOverlay').style.display = 'none';
         } else {
@@ -157,42 +170,28 @@
         }
     }
 
-    // --- POPUP FUNCTIONS ---
+    // --- POPUP & REDIRECT ---
     function openPopup(item) {
-        const overlay = document.getElementById('infoOverlay');
-        const nameDisplay = document.getElementById('popupName');
-        const dashBtn = document.getElementById('dashboardBtn');
-        
-        nameDisplay.innerText = item.name;
-        dashBtn.innerText = `${item.name} Dashboard`;
-        
-        overlay.style.display = 'flex';
+        document.getElementById('popupName').innerText = item.name;
+        document.getElementById('dashboardBtn').innerText = `${item.name} Dashboard`;
+        document.getElementById('infoOverlay').style.display = 'flex';
     }
 
-    function closeInfo(e) {
-        document.getElementById('infoOverlay').style.display = 'none';
-    }
-
+    function closeInfo() { document.getElementById('infoOverlay').style.display = 'none'; }
+    
     function goToDashboard() {
-        // ลิงก์ไปยังโฟลเดอร์ dashboard afo/index.html ใน Repository เดียวกัน
         window.location.href = "dashboard afo/index.html";
     }
 
-    // --- DATA FUNCTIONS ---
+    // --- DATA HANDLING ---
     async function loadSheetData() {
         const statusEl = document.getElementById('syncStatus');
         statusEl.innerHTML = '<span class="spin">⚙️</span>';
-
         try {
             const response = await fetch(`${SHEET_API_URL}?t=${new Date().getTime()}`);
             rawSheetData = await response.json();
-            
-            if (isInitialLoad) {
-                renderDashboard();
-                isInitialLoad = false;
-            } else {
-                updateColorsOnly();
-            }
+            if (isInitialLoad) { renderDashboard(); isInitialLoad = false; } 
+            else { updateColorsOnly(); }
             statusEl.innerHTML = '✅';
         } catch (error) { 
             console.error(error); 
@@ -238,12 +237,7 @@
 
             let itemsInGroup = groupContents[g];
             let groupOrder = savedOrder[g] || [];
-
-            itemsInGroup.sort((a, b) => {
-                let indexA = groupOrder.indexOf(String(a.id));
-                let indexB = groupOrder.indexOf(String(b.id));
-                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-            });
+            itemsInGroup.sort((a, b) => (groupOrder.indexOf(String(a.id)) === -1 ? 999 : groupOrder.indexOf(String(a.id))) - (groupOrder.indexOf(String(b.id)) === -1 ? 999 : groupOrder.indexOf(String(b.id))));
 
             itemsInGroup.forEach(item => contentDiv.appendChild(createBlock(item)));
             groupDiv.appendChild(contentDiv);
@@ -255,9 +249,8 @@
                 onEnd: async (evt) => {
                     const itemEl = evt.item;
                     const newGroupName = evt.to.dataset.name;
-                    const rowIndex = itemEl.dataset.rowindex;
                     document.getElementById('syncStatus').innerHTML = '<span class="spin">⚙️</span>';
-                    await updateLatestGroupInSheet(rowIndex, newGroupName);
+                    await updateLatestGroupInSheet(itemEl.dataset.rowindex, newGroupName);
                     saveAllGroupsOrder();
                     const itemData = rawSheetData.find(d => d.id === itemEl.id);
                     if(itemData) { itemData.isUnknownGroup = false; applyColor(itemEl, itemData); }
@@ -274,12 +267,7 @@
         div.dataset.rowindex = item.rowIndex;
         div.innerText = item.name;
         applyColor(div, item);
-        
-        // เพิ่มคลิกเพื่อเปิด Popup
-        div.onclick = (e) => {
-            if (e.target === div) openPopup(item);
-        };
-        
+        div.onclick = () => openPopup(item); // คลิกเพื่อเปิด Popup
         return div;
     }
 
@@ -298,9 +286,8 @@
     }
 
     async function updateLatestGroupInSheet(rowIndex, newGroupName) {
-        try {
-            await fetch(SHEET_API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ rowIndex, newGroupName }) });
-        } catch (e) { console.error(e); }
+        try { await fetch(SHEET_API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ rowIndex, newGroupName }) }); } 
+        catch (e) { console.error(e); }
     }
 
     function saveAllGroupsOrder() {
