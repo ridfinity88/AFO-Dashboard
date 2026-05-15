@@ -20,6 +20,7 @@
             --card-yellow: #fbc02d;
             --text-color: #fff;
             --accent-blue: #2196F3;
+            --glass-bg: rgba(255, 255, 255, 0.1);
         }
 
         * { box-sizing: border-box; }
@@ -34,12 +35,10 @@
         
         .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; }
         
-        /* สไตล์ส่วนเวลาและสถานะการ Refresh */
         .header-info { position: absolute; top: 5px; left: 10px; z-index: 10; display: flex; gap: 5px; align-items: center; }
-        .live-clock { background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; font-mono; }
+        .live-clock { background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; }
         #syncStatus { font-size: 0.9rem; }
         
-        /* Animation สำหรับไอคอนหมุน */
         .spin { animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -69,47 +68,64 @@
 
         .group-content.small-group { grid-template-columns: repeat(4, 1fr); }
         .group-content.large-group { grid-template-columns: repeat(8, 1fr); }
+        
         .block { 
             background-color: var(--card-gray); display: flex; align-items: center; justify-content: center; 
-            font-size: 0.52rem; cursor: grab; padding: 2px; border-radius: 3px; height: var(--block-height);
-            text-align: center; line-height: 1.1; transition: background-color 0.5s ease;
+            font-size: 0.52rem; cursor: pointer; padding: 2px; border-radius: 3px; height: var(--block-height);
+            text-align: center; line-height: 1.1; transition: transform 0.1s, background-color 0.5s ease;
+            user-select: none;
         }
+        .block:active { transform: scale(0.95); }
         .block.leader { grid-column: span 2; grid-row: span 2; height: var(--leader-height); font-size: 0.6rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); }
 
+        /* Status Colors */
         .status-green { background-color: var(--card-green) !important; }
         .status-red { background-color: var(--card-red) !important; }
         .status-yellow { background-color: var(--card-yellow) !important; color: #000 !important; }
         .status-unknown { background-color: #fff !important; color: #000 !important; }
 
-        #authOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: #222; padding: 25px; border-radius: 8px; width: 320px; text-align: center; border: 1px solid #444; }
+        /* Auth & Info Modal Styles */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #222; padding: 30px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(0); transition: 0.3s; }
+        
+        /* Popup Card Specific */
+        .info-card { border-top: 4px solid var(--accent-blue); }
+        .info-card h2 { margin: 0 0 20px 0; font-size: 1.5rem; color: #fff; }
+        
         .input-group { position: relative; width: 100%; margin: 15px 0; }
-        input[type="password"], input[type="text"] { width: 100%; padding: 12px 40px 12px 12px; background: #333; border: 1px solid #555; color: white; text-align: center; border-radius: 4px; outline: none; }
-        .eye-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #aaa; font-size: 1.2rem; }
-        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--accent-blue); color: white; }
+        input[type="password"] { width: 100%; padding: 12px; background: #333; border: 1px solid #555; color: white; text-align: center; border-radius: 4px; outline: none; }
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--accent-blue); color: white; transition: 0.2s; margin-bottom: 10px; }
+        .btn-action:hover { background: #1976D2; transform: translateY(-2px); }
+        .btn-close { background: #444; color: #ccc; font-size: 0.8rem; padding: 8px; border: none; width: 100%; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="main-title">Machine Plant1 Dashboard</div>
 <div class="header-info">
-    <div class="live-clock" id="liveClock">00:00:00</div>
+    <div class="live-clock" id="liveClock">00/00/0000 00:00:00</div>
     <div id="syncStatus">✅</div>
 </div>
 <div class="watermark">RiDFinity Design</div>
 
 <div class="dashboard" id="dashboard"></div>
 
-<div id="authOverlay">
+<div id="authOverlay" class="overlay">
     <div class="modal">
         <h3 style="margin-top:0;">Access Required</h3>
         <div class="input-group">
             <input type="password" id="mainPass" placeholder="Enter Password" onkeypress="handleEnter(event)">
-            <button type="button" class="eye-btn" onclick="togglePass()">
-                <span id="eyeIcon">👁️</span>
-            </button>
         </div>
-        <button id="authBtn" class="btn-action" onclick="unlockApp()">LOGIN</button>
+        <button class="btn-action" onclick="unlockApp()">LOGIN</button>
+    </div>
+</div>
+
+<div id="infoOverlay" class="overlay" onclick="closeInfo(event)">
+    <div class="modal info-card" onclick="event.stopPropagation()">
+        <div id="popupColorBar" style="height: 5px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 12px 12px 0 0;"></div>
+        <h2 id="popupName">Name</h2>
+        <button id="dashboardBtn" class="btn-action" onclick="goToDashboard()">Dashboard</button>
+        <button class="btn-close" onclick="document.getElementById('infoOverlay').style.display='none'">CLOSE</button>
     </div>
 </div>
 
@@ -127,16 +143,10 @@
 
     let rawSheetData = [];
     let isInitialLoad = true;
+    let currentSelectedId = null;
 
-    function togglePass() {
-        const input = document.getElementById('mainPass');
-        const icon = document.getElementById('eyeIcon');
-        input.type = (input.type === "password") ? "text" : "password";
-        icon.innerText = (input.type === "password") ? "👁️" : "🙈";
-    }
-
+    // --- AUTH FUNCTIONS ---
     function handleEnter(e) { if (e.key === 'Enter') unlockApp(); }
-
     function unlockApp() {
         if (document.getElementById('mainPass').value === MASTER_KEY) {
             sessionStorage.setItem('isLoggedIn', 'true');
@@ -147,13 +157,33 @@
         }
     }
 
-    // ฟังก์ชัน Refresh ข้อมูลแบบเนียนๆ
+    // --- POPUP FUNCTIONS ---
+    function openPopup(item) {
+        const overlay = document.getElementById('infoOverlay');
+        const nameDisplay = document.getElementById('popupName');
+        const dashBtn = document.getElementById('dashboardBtn');
+        
+        nameDisplay.innerText = item.name;
+        dashBtn.innerText = `${item.name} Dashboard`;
+        
+        overlay.style.display = 'flex';
+    }
+
+    function closeInfo(e) {
+        document.getElementById('infoOverlay').style.display = 'none';
+    }
+
+    function goToDashboard() {
+        // ลิงก์ไปยังโฟลเดอร์ dashboard afo/index.html ใน Repository เดียวกัน
+        window.location.href = "dashboard afo/index.html";
+    }
+
+    // --- DATA FUNCTIONS ---
     async function loadSheetData() {
         const statusEl = document.getElementById('syncStatus');
-        statusEl.innerHTML = '<span class="spin text-blue-400">⚙️</span>';
+        statusEl.innerHTML = '<span class="spin">⚙️</span>';
 
         try {
-            // ป้องกัน Cache ด้วยการต่อ Timestamp
             const response = await fetch(`${SHEET_API_URL}?t=${new Date().getTime()}`);
             rawSheetData = await response.json();
             
@@ -163,15 +193,13 @@
             } else {
                 updateColorsOnly();
             }
-            
-            statusEl.innerHTML = '<span style="color: #4ade80;">✅</span>';
+            statusEl.innerHTML = '✅';
         } catch (error) { 
-            console.error("Fetch Error:", error); 
+            console.error(error); 
             statusEl.innerHTML = '❌';
         }
     }
 
-    // ฟังก์ชันอัปเดตเฉพาะสีและชื่อ (กรณีมีการเปลี่ยนข้อมูลเบื้องหลัง) โดยไม่ทำลาย Element
     function updateColorsOnly() {
         rawSheetData.forEach(item => {
             const block = document.getElementById(item.id);
@@ -185,7 +213,6 @@
     function renderDashboard() {
         const container = document.getElementById('dashboard');
         container.innerHTML = '';
-        
         const groupContents = {};
         for (let i = 1; i <= totalGroups; i++) groupContents[i] = [];
 
@@ -193,10 +220,7 @@
             let assignedGroupName = (item.latestGroup || item.initialGroup || "").trim();
             let groupId = findGroupIdByName(assignedGroupName);
             if (groupId) groupContents[groupId].push(item);
-            else {
-                item.isUnknownGroup = true;
-                groupContents[1].push(item); 
-            }
+            else { item.isUnknownGroup = true; groupContents[1].push(item); }
         });
 
         const savedOrder = JSON.parse(localStorage.getItem('dashboard_order_v1') || '{}');
@@ -208,8 +232,7 @@
             groupDiv.innerHTML = `<div class="group-header">${FIXED_GROUP_NAMES[g]}</div>`;
             
             const contentDiv = document.createElement('div');
-            const sizeClass = (g <= 3) ? 'large-group' : 'small-group';
-            contentDiv.className = `group-content ${sizeClass}`;
+            contentDiv.className = `group-content ${g <= 3 ? 'large-group' : 'small-group'}`;
             contentDiv.id = `group-${g}`;
             contentDiv.dataset.name = FIXED_GROUP_NAMES[g];
 
@@ -219,9 +242,7 @@
             itemsInGroup.sort((a, b) => {
                 let indexA = groupOrder.indexOf(String(a.id));
                 let indexB = groupOrder.indexOf(String(b.id));
-                if (indexA === -1) indexA = 999;
-                if (indexB === -1) indexB = 999;
-                return indexA - indexB;
+                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
             });
 
             itemsInGroup.forEach(item => contentDiv.appendChild(createBlock(item)));
@@ -235,49 +256,15 @@
                     const itemEl = evt.item;
                     const newGroupName = evt.to.dataset.name;
                     const rowIndex = itemEl.dataset.rowindex;
-                    statusEl = document.getElementById('syncStatus');
-                    statusEl.innerHTML = '<span class="spin">⚙️</span>';
-                    
+                    document.getElementById('syncStatus').innerHTML = '<span class="spin">⚙️</span>';
                     await updateLatestGroupInSheet(rowIndex, newGroupName);
                     saveAllGroupsOrder();
-                    
                     const itemData = rawSheetData.find(d => d.id === itemEl.id);
-                    if(itemData) {
-                        itemData.isUnknownGroup = false; 
-                        applyColor(itemEl, itemData);
-                    }
-                    statusEl.innerHTML = '✅';
+                    if(itemData) { itemData.isUnknownGroup = false; applyColor(itemEl, itemData); }
+                    document.getElementById('syncStatus').innerHTML = '✅';
                 }
             });
         }
-    }
-
-    function findGroupIdByName(name) {
-        for (let id in FIXED_GROUP_NAMES) {
-            if (FIXED_GROUP_NAMES[id] === name) return id;
-        }
-        return null;
-    }
-
-    async function updateLatestGroupInSheet(rowIndex, newGroupName) {
-        try {
-            await fetch(SHEET_API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({ rowIndex, newGroupName })
-            });
-        } catch (e) { console.error(e); }
-    }
-
-    function saveAllGroupsOrder() {
-        const orderData = {};
-        for (let g = 1; g <= totalGroups; g++) {
-            const el = document.getElementById(`group-${g}`);
-            if (el) {
-                orderData[g] = Array.from(el.children).map(child => child.id);
-            }
-        }
-        localStorage.setItem('dashboard_order_v1', JSON.stringify(orderData));
     }
 
     function createBlock(item) {
@@ -287,6 +274,12 @@
         div.dataset.rowindex = item.rowIndex;
         div.innerText = item.name;
         applyColor(div, item);
+        
+        // เพิ่มคลิกเพื่อเปิด Popup
+        div.onclick = (e) => {
+            if (e.target === div) openPopup(item);
+        };
+        
         return div;
     }
 
@@ -299,23 +292,36 @@
         else if (s === 2 || s === "2") el.classList.add('status-red');
     }
 
+    function findGroupIdByName(name) {
+        for (let id in FIXED_GROUP_NAMES) if (FIXED_GROUP_NAMES[id] === name) return id;
+        return null;
+    }
+
+    async function updateLatestGroupInSheet(rowIndex, newGroupName) {
+        try {
+            await fetch(SHEET_API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ rowIndex, newGroupName }) });
+        } catch (e) { console.error(e); }
+    }
+
+    function saveAllGroupsOrder() {
+        const orderData = {};
+        for (let g = 1; g <= totalGroups; g++) {
+            const el = document.getElementById(`group-${g}`);
+            if (el) orderData[g] = Array.from(el.children).map(child => child.id);
+        }
+        localStorage.setItem('dashboard_order_v1', JSON.stringify(orderData));
+    }
+
     window.onload = () => {
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             document.getElementById('authOverlay').style.display = 'flex';
             document.getElementById('mainPass').focus();
         }
-        
         loadSheetData();
-
-        // นาฬิกาแบบใหม่: แสดง 15/05/2026 14:30:05
         setInterval(() => { 
             const now = new Date();
-            const dateStr = now.toLocaleDateString('en-GB'); // แสดงผลเป็น DD/MM/YYYY
-            const timeStr = now.toLocaleTimeString('th-TH');
-            document.getElementById('liveClock').innerText = `${dateStr} ${timeStr}`; 
+            document.getElementById('liveClock').innerText = `${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('th-TH')}`; 
         }, 1000);
-
-        // Auto Refresh ข้อมูลทุก 10 วินาที (เปลี่ยนตัวเลข 10000 เป็นเวลาที่ต้องการ)
         setInterval(loadSheetData, 57000);
     };
 </script>
