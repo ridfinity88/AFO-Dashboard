@@ -33,7 +33,20 @@
         @keyframes highlight { 0% { background: rgba(59, 130, 246, 0.2); } 100% { background: transparent; } }
 
         /* การ์ดเกจย่อยฝั่งขวา */
-        .gauge-card { background: #182235; border: 1px solid #233149; border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; }
+        .gauge-card { 
+    background: #182235; 
+    border: 1px solid #233149; 
+    border-radius: 10px; 
+    padding: 8px 12px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    
+    /* 🛠️ เพิ่ม 2 บรรทัดนี้เพื่อบีบไม่ให้การ์ดกว้างเกินไป */
+    width: 100%;
+    max-width: 260px; /* ปรับตัวเลขนี้ขึ้น-ลงได้ตามความเหมาะสม */
+    margin: 0 auto;
+}
         .gauge-container { position: relative; width: 100%; max-width: 150px; margin: 0 auto; }
         .gauge-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 25px; }
     </style>
