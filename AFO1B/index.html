@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* จัดอัตราส่วน 3 คอลัมน์หลักให้สมดุลและกระชับ */
-        :root { --width-col-left: 0.7fr; --width-col-center: 0.9fr; --width-col-right: 1.4fr; }
+        /* 🛠️ ปรับอัตราส่วน Grid ให้สมดุล: ให้คอลัมน์ซ้ายและกลางยืดตัวได้ ส่วนคอลัมน์ขวาจะใช้พื้นที่คงที่ตามขนาดการ์ด */
+        :root { --width-col-left: 1fr; --width-col-center: 1fr; --width-col-right: auto; }
         body { background: #0f172a; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; }
         
         /* สไตล์หน้า Login */
@@ -34,19 +34,15 @@
 
         /* การ์ดเกจย่อยฝั่งขวา */
         .gauge-card { 
-    background: #182235; 
-    border: 1px solid #233149; 
-    border-radius: 10px; 
-    padding: 8px 12px; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: space-between; 
-    
-    /* 🛠️ เพิ่ม 2 บรรทัดนี้เพื่อบีบไม่ให้การ์ดกว้างเกินไป */
-    width: 100%;
-    max-width: 260px; /* ปรับตัวเลขนี้ขึ้น-ลงได้ตามความเหมาะสม */
-    margin: 0 auto;
-}
+            background: #182235; 
+            border: 1px solid #233149; 
+            border-radius: 10px; 
+            padding: 8px 12px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            width: 260px; /* 🛠️ ล็อกขนาดคงที่ไว้ตามที่คุณต้องการ */
+        }
         .gauge-container { position: relative; width: 100%; max-width: 150px; margin: 0 auto; }
         .gauge-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 25px; }
     </style>
@@ -125,7 +121,7 @@
                 <div class="card flex items-center justify-center bg-[#111625] border-[#1e2640]"><img src="out.png" class="max-h-[85%]"></div>
             </div>
 
-            <div class="grid grid-cols-2 grid-rows-3 gap-3">
+            <div class="grid grid-cols-2 grid-rows-3 gap-3 justify-items-end">
                 
                 <div class="gauge-card">
                     <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-slate-300">ชั้นที่ 1 (ชั่วโมง)</span><span class="text-slate-500 text-[9px]">อัปเดตล่าสุด</span></div>
@@ -236,12 +232,11 @@
         function createGauge(canvasId, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // ตั้งค่าเซกเมนต์สัดส่วนตามประเภทของกราฟตามรูปแนบ
-            let dataSegments = [70, 15, 15]; // ปกติ (ชั่วโมง/ความร้อน): เขียวเยอะ
+            let dataSegments = [70, 15, 15]; 
             let segmentColors = ['#10b981', '#f59e0b', '#ef4444'];
             
             if (type === 'current') {
-                dataSegments = [20, 20, 20, 20, 20]; // สไตล์สลับแถบสีของ Current
+                dataSegments = [20, 20, 20, 20, 20]; 
                 segmentColors = ['#ef4444', '#f59e0b', '#10b981', '#f59e0b', '#ef4444'];
             }
 
@@ -273,7 +268,6 @@
                         const startAngle = meta.data[0].startAngle;
                         const totalCircumference = Math.PI;
                         
-                        // คำนวณองศาของจุดชี้ตามสเกลข้อมูลจริง
                         let factor = 0;
                         if (type === 'hr') factor = score / 1500;
                         else if (type === 'current') factor = score / 4;
@@ -289,7 +283,6 @@
                         const nx = cx + radius * Math.cos(targetAngle);
                         const ny = cy + radius * Math.sin(targetAngle);
 
-                        // วาดปุ่มกลมชี้ตำแหน่งค่าบนหน้าปัด (มีไอคอนจำลองด้านใน)
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(nx, ny, 7, 0, 2 * Math.PI);
@@ -356,7 +349,6 @@
                     tableTop.innerHTML = html;
                     tableBottom.innerHTML = html;
 
-                    // อัปเดตและจำลองตำแหน่งเข็มเกจ (Mapping ข้อมูลคงที่ตามรูปภาพตัวอย่างของคุณ)
                     updateGaugeValue('hr1', 1158, 'val-hr1');
                     updateGaugeValue('hr2', 852, 'val-hr2');
                     updateGaugeValue('cur1', 2.06, 'val-cur1', true);
