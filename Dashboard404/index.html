@@ -37,7 +37,7 @@
         .maintenance-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 40px 30px;
+            padding: 40px 30px 50px 30px; /* เพิ่ม padding ด้านล่างเล็กน้อยเพื่อให้สมดุลกับลายน้ำ */
             border-radius: 12px;
             width: 90%;
             max-width: 450px;
@@ -62,15 +62,8 @@
         h2 {
             font-size: 1.4rem;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 25px; /* ปรับมาร์จินให้เหมาะสมกับดีไซน์ */
             letter-spacing: 0.5px;
-        }
-
-        p {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 30px;
         }
 
         /* ปุ่มกดกลับหน้าหลักภายนอกโฟลเดอร์ (../index.html) */
@@ -98,13 +91,16 @@
             transform: translateY(0);
         }
 
-        /* ลายน้ำด้านล่าง */
+        /* ลายน้ำด้านล่าง จัดให้อยู่ตรงกลางการ์ด */
         .watermark { 
             position: absolute; 
             bottom: 15px; 
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 0.65rem; 
             color: rgba(255, 255, 255, 0.15); 
             letter-spacing: 1px;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -112,8 +108,7 @@
 
 <div class="maintenance-card">
     <div class="icon-container">⚙️</div>
-    <h2>เครื่องจักรไม่ได้ใช้งาน</h2>
-    <p>อยู่ระหว่าง Update ระบบ IOT</p>
+    <h2>อยู่ระหว่าง Update ระบบ IOT</h2>
     
     <!-- ลิงก์ย้อนกลับไปที่ไฟล์ index.html นอกโฟลเดอร์ปัจจุบัน -->
     <a href="../index.html" class="btn-home">กลับไปหน้าแรก</a>
