@@ -15,6 +15,7 @@
             --card-green: #2e7d32;
             --card-red: #c62828;
             --card-yellow: #fbc02d;
+            --card-blue: #2196F3;
             --text-color: #fff;
             --accent-blue: #2196F3;
         }
@@ -29,7 +30,54 @@
             overflow: hidden; 
         }
         
-        .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; }
+        /* แถบชุดควบคุมหัวข้อด้านบน */
+        .top-navigation {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            z-index: 5;
+        }
+
+        /* โครงสร้างกล่องสรุปตัวเลข G2, H2, I2, J2 */
+        .summary-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #111;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #333;
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem; /* เล็กกว่าหัวข้อหลัก */
+            font-weight: 500;
+            color: #ddd;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-blue { background-color: var(--card-blue); }
+        .dot-green { background-color: var(--card-green); }
+        .dot-yellow { background-color: var(--card-yellow); }
+        .dot-red { background-color: var(--card-red); }
+
+        .main-title { 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            color: #ccc; 
+            text-transform: uppercase; 
+            white-space: nowrap;
+        }
         
         .header-info { position: absolute; top: 5px; left: 10px; z-index: 10; display: flex; gap: 5px; align-items: center; }
         .live-clock { background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; }
@@ -55,7 +103,7 @@
         #container-1 { grid-area: g1; } #container-2 { grid-area: g2; } #container-3 { grid-area: g3; }
         #container-4 { grid-area: g4; } #container-5 { grid-area: g5; } #container-6 { grid-area: g6; }
         #container-7 { grid-area: g7; } #container-8 { grid-area: g8; } #container-9 { grid-area: g9; }
-        #container-10 { grid-area: g10; } #container-11 { grid-area: g11; } #container-12 { grid-area: g12; }
+        #container-10 { grid-area: g10; } #container-11 { grid-area: g12; } #container-12 { grid-area: g11; } /* ยึดตามโครงสร้างเดิม */
         #container-13 { grid-area: g13; } #container-14 { grid-area: g14; } #container-15 { grid-area: g15; }
 
         .group-container { border: 1px solid #333; background: #111; padding: 6px; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; }
@@ -83,7 +131,6 @@
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; }
         .modal { background: #222; padding: 30px; border-radius: 12px; width: 350px; text-align: center; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
         
-        /* สไตล์ Input และปุ่มดวงตา */
         .input-group { position: relative; width: 100%; margin: 15px 0; }
         input[type="password"], input[type="text"] { width: 100%; padding: 12px 45px 12px 12px; background: #333; border: 1px solid #555; color: white; text-align: center; border-radius: 4px; outline: none; }
         
@@ -97,13 +144,22 @@
         .btn-action:hover { background: #1976D2; transform: translateY(-2px); }
         .btn-close { background: #444; color: #ccc; font-size: 0.8rem; padding: 8px; border: none; width: 100%; border-radius: 4px; cursor: pointer; }
         
-        /* สไตล์กล่องข้อมูลคอลัมน์ C ใน Pop-up */
         .popup-detail { font-size: 0.95rem; color: #bbb; margin-top: 5px; margin-bottom: 25px; font-weight: normal; word-break: break-word; }
     </style>
 </head>
 <body>
 
-<div class="main-title">Machine Plant1 Dashboard</div>
+<!-- แถบด้านบน: วางกล่องสรุปไว้ก่อนชื่อ Dashboard -->
+<div class="top-navigation">
+    <div class="summary-container">
+        <div class="summary-item"><span class="dot dot-blue"></span><span id="sumBlue">0</span></div>
+        <div class="summary-item"><span class="dot dot-green"></span><span id="sumGreen">0</span></div>
+        <div class="summary-item"><span class="dot dot-yellow"></span><span id="sumYellow">0</span></div>
+        <div class="summary-item"><span class="dot dot-red"></span><span id="sumRed">0</span></div>
+    </div>
+    <div class="main-title">Machine Plant1 Dashboard</div>
+</div>
+
 <div class="header-info">
     <div class="live-clock" id="liveClock">00/00/0000 00:00:00</div>
     <div id="syncStatus">✅</div>
@@ -128,7 +184,6 @@
 <div id="infoOverlay" class="overlay" onclick="closeInfo()">
     <div class="modal" onclick="event.stopPropagation()">
         <h2 id="popupName" style="margin-bottom: 5px;">Name</h2>
-        <!-- ส่วนที่เพิ่ม: แสดงข้อมูลคอลัมน์ C ใต้ชื่อรายชื่อ -->
         <div id="popupDetail" class="popup-detail">Detail</div>
         <button id="dashboardBtn" class="btn-action" onclick="goToDashboard()">Dashboard</button>
         <button class="btn-close" onclick="closeInfo()">CLOSE</button>
@@ -138,7 +193,8 @@
 <script>
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbz2TRWNs-SFwz3J0PgkptYR_0u5obxarADK_iirwBupnvLIGN1mV3dpVBvXM4f5PKznzg/exec";
+    // ⚠️ อย่าลืมนำ URL ที่ได้จากการ Deploy ใหม่บน Google Sheet มาเปลี่ยนที่นี่ครับ
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyVP13ejxmSCabL6ZYPaOWCpqobDcjrk1gI8i9nM0PUBQaWp6La6iT16H-PyYj1roeftg/exec";
 
     const FIXED_GROUP_NAMES = { 
         1: "ห้องส่งออก", 2: "PACK A", 3: "PACK B", 4: "ห้องย่างไก่", 
@@ -150,7 +206,6 @@
     let rawSheetData = [];
     let isInitialLoad = true;
 
-    // --- ฟังก์ชันเปิด-ปิดดูรหัสผ่าน ---
     function togglePass() {
         const input = document.getElementById('passInput');
         const icon = document.getElementById('eyeIcon');
@@ -176,10 +231,8 @@
         }
     }
 
-    // --- POPUP & REDIRECT ---
     function openPopup(item) {
         document.getElementById('popupName').innerText = item.name;
-        // ใส่ข้อมูล Column C ลงใน Pop-up หากไม่มีข้อมูลจะใส่เครื่องหมาย - แทน
         document.getElementById('popupDetail').innerText = item.columnC ? item.columnC : "-";
         document.getElementById('dashboardBtn').innerText = `${item.name} Dashboard`;
         document.getElementById('infoOverlay').style.display = 'flex';
@@ -197,7 +250,18 @@
         statusEl.innerHTML = '<span class="spin">⚙️</span>';
         try {
             const response = await fetch(`${SHEET_API_URL}?t=${new Date().getTime()}`);
-            rawSheetData = await response.json();
+            const resJson = await response.json();
+            
+            // อัปเดตตัวเลขสรุปด้านบนหน้าต่าง (G2, H2, I2, J2)
+            if (resJson.summary) {
+                document.getElementById('sumBlue').innerText = resJson.summary.blue;
+                document.getElementById('sumGreen').innerText = resJson.summary.green;
+                document.getElementById('sumYellow').innerText = resJson.summary.yellow;
+                document.getElementById('sumRed').innerText = resJson.summary.red;
+            }
+
+            rawSheetData = resJson.personnel || [];
+            
             if (isInitialLoad) { renderDashboard(); isInitialLoad = false; } 
             else { updateColorsAndDataOnly(); }
             statusEl.innerHTML = '✅';
@@ -213,7 +277,6 @@
             if (block) {
                 block.innerText = item.name;
                 applyColor(block, item);
-                // อัปเดตข้อมูลก้อน Object ฝั่งคลิกเปิด Pop-up ให้เป็นข้อมูลใหม่ด้วย
                 block.onclick = () => openPopup(item);
             }
         });
@@ -265,7 +328,7 @@
                     const itemData = rawSheetData.find(d => d.id === itemEl.id);
                     if(itemData) { 
                         itemData.isUnknownGroup = false; 
-                        itemData.latestGroup = newGroupName; // อัปเดตกลุ่มล่าสุดในหน่วยความจำชั่วคราวด้วย
+                        itemData.latestGroup = newGroupName; 
                         applyColor(itemEl, itemData); 
                     }
                     document.getElementById('syncStatus').innerHTML = '✅';
@@ -300,7 +363,10 @@
     }
 
     async function updateLatestGroupInSheet(rowIndex, newGroupName) {
-        try { await fetch(SHEET_API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ rowIndex, newGroupName }) }); } 
+        try { 
+            // ส่งอัปเดตเป็นแบบก้อน Object เพื่อความเข้ากันได้ดีที่สุดกับระบบเดิม
+            await fetch(SHEET_API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ rowIndex, newGroupName }) }); 
+        } 
         catch (e) { console.error(e); }
     }
 
@@ -323,7 +389,7 @@
             const now = new Date();
             document.getElementById('liveClock').innerText = `${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('th-TH')}`; 
         }, 1000);
-        setInterval(loadSheetData, 57000);
+        setInterval(loadSheetData, 57000); // วนรอบดึงข้อมูลใหม่ทุก 57 วินาทีอัตโนมัติ
     };
 </script>
 </body>
