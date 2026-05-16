@@ -96,6 +96,9 @@
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--accent-blue); color: white; transition: 0.2s; margin-bottom: 10px; }
         .btn-action:hover { background: #1976D2; transform: translateY(-2px); }
         .btn-close { background: #444; color: #ccc; font-size: 0.8rem; padding: 8px; border: none; width: 100%; border-radius: 4px; cursor: pointer; }
+        
+        /* สไตล์กล่องข้อมูลคอลัมน์ C ใน Pop-up */
+        .popup-detail { font-size: 0.95rem; color: #bbb; margin-top: 5px; margin-bottom: 25px; font-weight: normal; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -124,7 +127,9 @@
 
 <div id="infoOverlay" class="overlay" onclick="closeInfo()">
     <div class="modal" onclick="event.stopPropagation()">
-        <h2 id="popupName" style="margin-bottom: 25px;">Name</h2>
+        <h2 id="popupName" style="margin-bottom: 5px;">Name</h2>
+        <!-- ส่วนที่เพิ่ม: แสดงข้อมูลคอลัมน์ C ใต้ชื่อรายชื่อ -->
+        <div id="popupDetail" class="popup-detail">Detail</div>
         <button id="dashboardBtn" class="btn-action" onclick="goToDashboard()">Dashboard</button>
         <button class="btn-close" onclick="closeInfo()">CLOSE</button>
     </div>
@@ -133,7 +138,7 @@
 <script>
     const MASTER_KEY = "cpram2026";
     const totalGroups = 15;
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxnJHrkUy5YuQ7rk37Dm0aT9nhlx4CuLn0g2y0NmRW6i9yPwJLZJXSJqB0UvFPUvQu1vA/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbz2TRWNs-SFwz3J0PgkptYR_0u5obxarADK_iirwBupnvLIGN1mV3dpVBvXM4f5PKznzg/exec";
 
     const FIXED_GROUP_NAMES = { 
         1: "ห้องส่งออก", 2: "PACK A", 3: "PACK B", 4: "ห้องย่างไก่", 
@@ -151,10 +156,10 @@
         const icon = document.getElementById('eyeIcon');
         if (input.type === "password") {
             input.type = "text";
-            icon.innerText = "🙈"; // เปลี่ยนเป็นรูปปิดตา
+            icon.innerText = "🙈"; 
         } else {
             input.type = "password";
-            icon.innerText = "👁️"; // เปลี่ยนเป็นรูปเปิดตา
+            icon.innerText = "👁️"; 
         }
     }
 
@@ -174,6 +179,8 @@
     // --- POPUP & REDIRECT ---
     function openPopup(item) {
         document.getElementById('popupName').innerText = item.name;
+        // ใส่ข้อมูล Column C ลงใน Pop-up หากไม่มีข้อมูลจะใส่เครื่องหมาย - แทน
+        document.getElementById('popupDetail').innerText = item.columnC ? item.columnC : "-";
         document.getElementById('dashboardBtn').innerText = `${item.name} Dashboard`;
         document.getElementById('infoOverlay').style.display = 'flex';
     }
@@ -192,7 +199,7 @@
             const response = await fetch(`${SHEET_API_URL}?t=${new Date().getTime()}`);
             rawSheetData = await response.json();
             if (isInitialLoad) { renderDashboard(); isInitialLoad = false; } 
-            else { updateColorsOnly(); }
+            else { updateColorsAndDataOnly(); }
             statusEl.innerHTML = '✅';
         } catch (error) { 
             console.error(error); 
@@ -200,12 +207,14 @@
         }
     }
 
-    function updateColorsOnly() {
+    function updateColorsAndDataOnly() {
         rawSheetData.forEach(item => {
             const block = document.getElementById(item.id);
             if (block) {
                 block.innerText = item.name;
                 applyColor(block, item);
+                // อัปเดตข้อมูลก้อน Object ฝั่งคลิกเปิด Pop-up ให้เป็นข้อมูลใหม่ด้วย
+                block.onclick = () => openPopup(item);
             }
         });
     }
@@ -254,7 +263,11 @@
                     await updateLatestGroupInSheet(itemEl.dataset.rowindex, newGroupName);
                     saveAllGroupsOrder();
                     const itemData = rawSheetData.find(d => d.id === itemEl.id);
-                    if(itemData) { itemData.isUnknownGroup = false; applyColor(itemEl, itemData); }
+                    if(itemData) { 
+                        itemData.isUnknownGroup = false; 
+                        itemData.latestGroup = newGroupName; // อัปเดตกลุ่มล่าสุดในหน่วยความจำชั่วคราวด้วย
+                        applyColor(itemEl, itemData); 
+                    }
                     document.getElementById('syncStatus').innerHTML = '✅';
                 }
             });
