@@ -75,8 +75,8 @@
             padding: 8px 12px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: center; /* 🛠️ เปลี่ยนจาก space-between เป็น center เพื่อจัดให้เกจอยู่กลางการ์ดแนวตั้ง */
-            align-items: center;     /* 🛠️ จัดให้อยู่กึ่งกลางแนวนอน */
+            justify-content: center; /* จัดกลุ่มเนื้อหาให้อยู่กลางการ์ดในแนวตั้ง */
+            align-items: center;
             width: 260px;
             height: 100%;
             overflow: hidden;
@@ -99,7 +99,7 @@
         /* 🛠️ ปรับแต่งให้ตัวเลขอยู่กึ่งกลางวงกลมอย่างสมบูรณ์แบบ */
         .gauge-center-text { 
             position: absolute; 
-            bottom: 4px; /* ดันให้อยู่ระนาบจุดศูนย์กลางของครึ่งวงกลมพอดี */
+            bottom: -5px; /* ปรับพิกัดตัวเลขให้อยู่กลางตามตำแหน่งหน้าปัดใหม่ */
             left: 0;
             right: 0;
             display: flex; 
@@ -317,25 +317,24 @@
             }
         }
 
-        // --- ระบบการจัดการเกจวัดแบบอัพเกรด (Futuristic Emoji Pointer & Soft Arc) ---
+        // --- ระบบการจัดการเกจวัดแบบอัพเกรด (Futuristic Glow Pointer & Soft Arc) ---
         function createGauge(canvasId, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
             let maxVal = 100;
             let zones = [];
-            let pointerEmoji = "🍗"; // กำหนดตัวแปรสำหรับเก็บอิโมจิเริ่มต้น
+            let emoji = '📍'; // ตัวแปรเก็บอิโมจิปลายเข็ม
             
             if (type === 'hr') {
                 maxVal = 1700;
-                pointerEmoji = "🍗"; // Burner Time -> น่องไก่
                 zones = [
                     { limit: 1200, color: '#10b981' }, 
                     { limit: 1450, color: '#f59e0b' }, 
                     { limit: 1700, color: '#ef4444' }  
                 ];
+                emoji = '🍗';
             } else if (type === 'current') {
                 maxVal = 4.0;
-                pointerEmoji = "⚡"; // Current Conveyor -> สายฟ้า
                 zones = [
                     { limit: 1.80, color: '#ef4444' },
                     { limit: 1.95, color: '#f59e0b' },
@@ -343,9 +342,9 @@
                     { limit: 2.40, color: '#f59e0b' },
                     { limit: 4.00, color: '#ef4444' }
                 ];
+                emoji = '⚡';
             } else if (type === 'temp') {
                 maxVal = 350;
-                pointerEmoji = "🔥"; // Temp -> ไฟ
                 zones = [
                     { limit: 235, color: '#ef4444' },
                     { limit: 240, color: '#f59e0b' },
@@ -353,6 +352,7 @@
                     { limit: 260, color: '#f59e0b' },
                     { limit: 350, color: '#ef4444' }
                 ];
+                emoji = '🔥';
             }
 
             return new Chart(ctx, {
@@ -371,8 +371,8 @@
                     cutout: '75%', /* 🛠️ ปรับลดจาก 88% เป็น 75% เพื่อขยายแถบสเกลสีให้มีขนาดใหญ่ หนา และเห็นชัดเจนขึ้น */
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: { tooltip: { enabled: false }, legend: { display: false } },
-                    layout: { padding: { top: 10, bottom: 15, left: 10, right: 10 } }
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } }
+                    // ตัด layout padding ออกเพื่อเคลียร์พื้นที่ให้วัตถุอยู่กึ่งกลางกล่อง
                 },
                 plugins: [{
                     id: 'futuristicGauge',
@@ -380,8 +380,9 @@
                         const { ctx } = chart;
                         const score = chart.data.datasets[0].needleValue;
                         
+                        // คำนวณพิกัด Center ให้อยู่จุดกึ่งกลางพื้นที่วาดอย่างสมบูรณ์แบบ
                         const cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
-                        const cy = chart.chartArea.bottom - 2;
+                        const cy = chart.chartArea.bottom - 10; 
                         const outerR = chart.getDatasetMeta(0).data[0].outerRadius;
                         const innerR = chart.getDatasetMeta(0).data[0].innerRadius;
                         const trackWidth = outerR - innerR;
@@ -419,17 +420,16 @@
                         if (factor > 1) factor = 1; if (factor < 0) factor = 0;
                         const needleAngle = -Math.PI + (factor * Math.PI);
 
-                        // 4. 🛠️ เปลี่ยนเข็มวัดเดิมเป็นเขียนข้อความ "อิโมจิ" ชี้ไปยังพิกัดหน้าปัดตามค่ามุมองศา
-                        const emojiR = outerR + 10; // ดันระยะให้อิโมจิเยื้องออกไปเหนือแถบสเกลสีเล็กน้อยเพื่อความชัดเจน
-                        const pointerX = cx + emojiR * Math.cos(needleAngle);
-                        const pointerY = cy + emojiR * Math.sin(needleAngle);
-
-                        ctx.translate(pointerX, pointerY);
-                        ctx.rotate(needleAngle + Math.PI / 2); // หมุนหัวอิโมจิให้หันทำมุมขนานไปตามแนวโค้งของวงกลม
-                        ctx.font = "20px sans-serif"; // ขนาดอิโมจิเข็มวัด
+                        // 4. วาดตัวชี้บอกตำแหน่งด้วย อิโมจิ (Emoji Pointer) แทน Laser Line และ Glow Node เดิม
+                        const textX = cx + (centerR) * Math.cos(needleAngle);
+                        const textY = cy + (centerR) * Math.sin(needleAngle);
+                        
+                        ctx.translate(textX, textY);
+                        ctx.rotate(needleAngle + Math.PI / 2); // หมุนอิโมจิให้หันหน้าตามมุมของวงกลมหน้าปัด
+                        ctx.font = "20px Arial";
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
-                        ctx.fillText(pointerEmoji, 0, 0);
+                        ctx.fillText(emoji, 0, 0);
 
                         ctx.restore();
                     }
