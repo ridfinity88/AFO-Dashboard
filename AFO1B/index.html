@@ -435,7 +435,7 @@
 
                         // 5. วาดตัวชี้บอกตำแหน่งด้วย อิโมจิ (Emoji Pointer)
                         ctx.font = "12px Arial"; // 🛠️ ลดขนาดฟอนต์อิโมจิจาก 16px เป็น 12px เพื่อความสวยงามสมส่วนไม่ล้นวงกลม
-                        ctx.span = "center";
+                        ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
                         ctx.fillText(emoji, textX, textY); // 🛠️ แก้ไขให้เรนเดอร์อิโมจิทุกครั้งที่มีการวาดชุดข้อมูลสำเร็จ ป้องกันอาการอิโมจิหาย
 
@@ -461,18 +461,6 @@
 
             fetchData();
             setInterval(fetchData, 57000);
-        }
-
-        // 🛠️ ฟังก์ชันสำหรับช่วยแปลงค่าเป็นทศนิยม 2 ตำแหน่ง หากค่าที่ส่งมาเป็นตัวเลขหรือข้อความตัวเลข
-        function formatDisplayValue(val) {
-            if (val === undefined || val === null || String(val).trim() === "") return "-";
-            let cleanStr = String(val).replace(/[^\d.-]/g, '');
-            let parsed = parseFloat(cleanStr);
-            // ตรวจสอบว่าเป็นตัวเลขที่ถูกต้อง และต้องไม่ใช่กลุ่มคำระบุสถานะ เช่น ON/OFF 
-            if (!isNaN(parsed) && String(parsed) === cleanStr) {
-                return parsed.toFixed(2);
-            }
-            return val; // หากเป็นข้อความ เช่น ON, OFF, Error ให้ส่งค่าเดิมกลับไป
         }
 
         async function fetchData() {
@@ -524,15 +512,11 @@
                             realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
                         }
 
-                        // 🛠️ ปรับค่าแสดงผลในตารางให้เป็นทศนิยม 2 ตำแหน่งผ่านฟังก์ชัน formatDisplayValue
-                        let displayRealtime = formatDisplayValue(item.realtime);
-                        let displayNormal = formatDisplayValue(item.normal);
-
                         htmlTop += `
                             <tr class="border-b border-gray-900 row-update">
                                 <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
-                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${displayRealtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[22%]">${displayNormal}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
                             </tr>`;
                     });
                     tableTop.innerHTML = htmlTop;
@@ -559,15 +543,11 @@
                             realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
                         }
 
-                        // 🛠️ ปรับค่าแสดงผลในตารางให้เป็นทศนิยม 2 ตำแหน่งผ่านฟังก์ชัน formatDisplayValue
-                        let displayRealtime = formatDisplayValue(item.realtime);
-                        let displayNormal = formatDisplayValue(item.normal);
-
                         htmlBottom += `
                             <tr class="border-b border-gray-900 row-update">
                                 <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
-                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${displayRealtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[22%]">${displayNormal}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
                             </tr>`;
                     });
                     tableBottom.innerHTML = htmlBottom;
