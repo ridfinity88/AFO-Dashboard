@@ -372,7 +372,6 @@
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: { tooltip: { enabled: false }, legend: { display: false } }
-                    // ตัด layout padding ออกเพื่อเคลียร์พื้นที่ให้วัตถุอยู่กึ่งกลางกล่อง
                 },
                 plugins: [{
                     id: 'futuristicGauge',
@@ -420,13 +419,24 @@
                         if (factor > 1) factor = 1; if (factor < 0) factor = 0;
                         const needleAngle = -Math.PI + (factor * Math.PI);
 
-                        // 4. วาดตัวชี้บอกตำแหน่งด้วย อิโมจิ (Emoji Pointer) แทน Laser Line และ Glow Node เดิม
+                        // 4. คำนวณตำแหน่งพิกัดปลายเข็ม (Center ของแนวสเกลสี)
                         const textX = cx + (centerR) * Math.cos(needleAngle);
                         const textY = cy + (centerR) * Math.sin(needleAngle);
                         
                         ctx.translate(textX, textY);
-                        ctx.rotate(needleAngle + Math.PI / 2); // หมุนอิโมจิให้หันหน้าตามมุมของวงกลมหน้าปัด
-                        ctx.font = "20px Arial";
+                        ctx.rotate(needleAngle + Math.PI / 2); // หมุนวัตถุให้หันหน้าตามมุมของวงกลมหน้าปัด
+
+                        // 🛠️ [เพิ่มการวาดวงกลมสีขาวพื้นหลังล้อมรอบอิโมจิ]
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 14, 0, 2 * Math.PI); // วาดรัศมีวงกลมสีขาวครอบคลุมตัวอิโมจิพอดี (ขนาด 14px)
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fill();
+                        ctx.strokeStyle = '#2196F3'; // เพิ่มขอบนอกของวงกลมสีขาวด้วยสีฟ้าเพิ่มมิติไฮเทค
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+
+                        // 5. วาดตัวชี้บอกตำแหน่งด้วย อิโมจิ (Emoji Pointer)
+                        ctx.font = "16px Arial"; // ปรับลดขนาดเล็กน้อยให้ฟิตพอดีกับวงกลมสีขาวฉากหลังอย่างสวยงาม
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
                         ctx.fillText(emoji, 0, 0);
