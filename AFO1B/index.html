@@ -131,9 +131,9 @@
                         <table class="w-full text-[11px]">
                             <thead class="text-blue-400 border-b border-gray-900 text-left sticky top-0 bg-[#000] z-10">
                                 <tr>
-                                    <th class="pb-1 pr-4 w-[40%]">รายการ</th>
-                                    <th class="text-center pb-1 pr-4 w-[35%]">Real Time Data</th>
-                                    <th class="text-right pb-1 w-[25%]">ค่าปกติ</th>
+                                    <th class="pb-1 pr-4 w-[50%]">รายการ</th>
+                                    <th class="text-center pb-1 pr-4 w-[28%]">Real Time Data</th>
+                                    <th class="text-right pb-1 w-[22%]">ค่าปกติ</th>
                                 </tr>
                             </thead>
                         </table>
@@ -151,9 +151,9 @@
                         <table class="w-full text-[11px]">
                             <thead class="text-blue-400 border-b border-gray-900 text-left sticky top-0 bg-[#000] z-10">
                                 <tr>
-                                    <th class="pb-1 pr-4 w-[40%]">รายการ</th>
-                                    <th class="text-center pb-1 pr-4 w-[35%]">Real Time Data</th>
-                                    <th class="text-right pb-1 w-[25%]">ค่าปกติ</th>
+                                    <th class="pb-1 pr-4 w-[50%]">รายการ</th>
+                                    <th class="text-center pb-1 pr-4 w-[28%]">Real Time Data</th>
+                                    <th class="text-right pb-1 w-[22%]">ค่าปกติ</th>
                                 </tr>
                             </thead>
                         </table>
@@ -402,15 +402,41 @@
                 const response = await fetch(finalUrl);
                 const data = await response.json();
                 
+                // ฟังก์ชันสำหรับแปลงค่าข้อความให้เป็นตัวเลขเพื่อใช้เปรียบเทียบความถูกต้อง
+                const parseNum = (val) => {
+                    if (val === undefined || val === null) return NaN;
+                    let s = String(val).replace(/[^\d.-]/g, '');
+                    return parseFloat(s);
+                };
+                
                 // เรนเดอร์ UPPER DATA (ช่อง B2:D13)
                 if (data && data.upperData) {
                     let htmlTop = "";
                     data.upperData.forEach(item => {
+                        let rtNum = parseNum(item.realtime);
+                        let nmNum = parseNum(item.normal);
+                        
+                        // กำหนดสีเริ่มต้นในกรณีเปรียบเทียบตัวเลขไม่ได้ ให้เป็นสีฟ้าเดิม
+                        let realtimeColor = "text-blue-400"; 
+                        
+                        if (!isNaN(rtNum) && !isNaN(nmNum)) {
+                            if (rtNum === nmNum) {
+                                realtimeColor = "text-green-500"; // ตรงกันเป็นสีเขียว
+                            } else {
+                                realtimeColor = "text-red-500";   // น้อยกว่าหรือมากกว่าเป็นสีแดง
+                            }
+                        } else if (item.realtime && item.normal) {
+                            // กรณีข้อมูลเป็นข้อความตัวอักษร ให้เทียบ String ตรงๆ
+                            let rtStr = String(item.realtime).trim().toLowerCase();
+                            let nmStr = String(item.normal).trim().toLowerCase();
+                            realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
+                        }
+
                         htmlTop += `
                             <tr class="border-b border-gray-900 row-update">
-                                <td class="py-2 text-gray-300 font-bold pr-4 w-[40%]">${item.item}</td>
-                                <td class="text-center text-blue-400 font-bold pr-4 w-[35%]">${item.realtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[25%]">${item.normal}</td>
+                                <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
                             </tr>`;
                     });
                     tableTop.innerHTML = htmlTop;
@@ -420,11 +446,28 @@
                 if (data && data.lowerData) {
                     let htmlBottom = "";
                     data.lowerData.forEach(item => {
+                        let rtNum = parseNum(item.realtime);
+                        let nmNum = parseNum(item.normal);
+                        
+                        let realtimeColor = "text-blue-400"; 
+                        
+                        if (!isNaN(rtNum) && !isNaN(nmNum)) {
+                            if (rtNum === nmNum) {
+                                realtimeColor = "text-green-500";
+                            } else {
+                                realtimeColor = "text-red-500";
+                            }
+                        } else if (item.realtime && item.normal) {
+                            let rtStr = String(item.realtime).trim().toLowerCase();
+                            let nmStr = String(item.normal).trim().toLowerCase();
+                            realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
+                        }
+
                         htmlBottom += `
                             <tr class="border-b border-gray-900 row-update">
-                                <td class="py-2 text-gray-300 font-bold pr-4 w-[40%]">${item.item}</td>
-                                <td class="text-center text-blue-400 font-bold pr-4 w-[35%]">${item.realtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[25%]">${item.normal}</td>
+                                <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
                             </tr>`;
                     });
                     tableBottom.innerHTML = htmlBottom;
