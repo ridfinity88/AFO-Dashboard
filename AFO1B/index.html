@@ -275,4 +275,276 @@
             document.getElementById('clock').innerText = now.toLocaleDateString('th-TH', options);
         }
 
-        ...
+        function handleEnter(e) { if (e.key === 'Enter') checkLogin(); }
+
+        function togglePass() {
+            const input = document.getElementById('passInput');
+            const icon = document.getElementById('eyeIcon');
+            input.type = (input.type === "password") ? "text" : "password";
+            icon.innerText = (input.type === "password") ? "👁️" : "🙈";
+        }
+
+        function checkLogin() {
+            if (document.getElementById('passInput').value === MY_PASS) {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboardPage').style.display = 'flex';
+                initGauges();
+                startServices();
+            } else {
+                document.getElementById('errorTxt').style.display = 'block';
+                document.getElementById('passInput').value = '';
+                document.getElementById('passInput').focus();
+            }
+        }
+
+        // --- ระบบการจัดการเกจวัด (Chart.js Plugins) ---
+        function createGauge(canvasId, type) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            let dataSegments = [70, 15, 15]; 
+            let segmentColors = ['#2e7d32', '#fbc02d', '#c62828'];
+            
+            // ปรับเปลี่ยนช่วงของ Segment สีตามเงื่อนไขใหม่ที่กำหนด
+            if (type === 'hr') {
+                // 0-1200 เขียว (กว้าง 1200) | 1201-1450 เหลือง (กว้าง 250) | 1451 ขึ้นไป แดง (สมมติให้กว้างสูงสุด 1500 ดังนั้น แดง = 50)
+                dataSegments = [1200, 250, 50];
+                segmentColors = ['#2e7d32', '#fbc02d', '#c62828'];
+            } else if (type === 'current') {
+                // 0-1.75 แดง (1.75) | 1.76-1.94 เหลือง (0.19) | 1.95-2.25 เขียว (0.31) | 2.26-2.54 เหลือง (0.29) | 2.55 ขึ้นไป แดง (สมมติสุดที่ 3.0 แดง = 0.46)
+                dataSegments = [1.75, 0.19, 0.31, 0.29, 0.46]; 
+                segmentColors = ['#c62828', '#fbc02d', '#2e7d32', '#fbc02d', '#c62828'];
+            } else if (type === 'temp') {
+                // 0-229 แดง (229) | 230-239 เหลือง (10) | 240-255 เขียว (16) | 256 ขึ้นไป แดง (สมมติสุดที่ 300 แดง = 45)
+                dataSegments = [229, 10, 16, 45];
+                segmentColors = ['#c62828', '#fbc02d', '#2e7d32', '#c62828'];
+            }
+
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: dataSegments,
+                        backgroundColor: segmentColors,
+                        borderWidth: 0,
+                        needleValue: 0
+                    }]
+                },
+                options: {
+                    rotation: -90,
+                    circumference: 180,
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } },
+                    layout: { padding: { bottom: 5 } }
+                },
+                plugins: [{
+                    id: 'gaugeNeedle',
+                    afterDatasetsDraw(chart) {
+                        const { ctx, data } = chart;
+                        const score = data.datasets[0].needleValue;
+                        const meta = chart.getDatasetMeta(0);
+                        
+                        let factor = 0;
+                        if (type === 'hr') factor = score / 1500; // ค่ารวมสูงสุดของสเกล (1200 + 250 + 50)
+                        else if (type === 'current') factor = score / 3.0; // ค่ารวมสูงสุดของสเกล (1.75 + 0.19 + 0.31 + 0.29 + 0.46)
+                        else if (type === 'temp') factor = score / 300; // ค่ารวมสูงสุดของสเกล (229 + 10 + 16 + 45)
+
+                        if (factor > 1) factor = 1; if (factor < 0) factor = 0;
+
+                        // 🛠️ แก้ไขการคำนวณตำแหน่งมุมตรงนี้: แปลงสัดส่วน factor ให้อยู่บนระบบมุมวาดพิกัดครึ่งวงกลมด้านบนของ HTML5 Canvas
+                        const targetAngle = -Math.PI + (factor * Math.PI);
+                        
+                        const cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+                        const cy = chart.chartArea.bottom - 4;
+                        
+                        // คำนวณรัศมีให้อยู่กึ่งกลางความหนาของหลอดพอดี
+                        const radius = (meta.data[0].outerRadius + meta.data[0].innerRadius) / 2;
+                        
+                        const nx = cx + radius * Math.cos(targetAngle);
+                        const ny = cy + radius * Math.sin(targetAngle);
+
+                        ctx.save();
+                        
+                        // เลือกอิโมจิให้ตรงตามกลุ่มประเภทเกจที่ส่งมา
+                        let emoji = "🍗"; 
+                        if (type === "current") emoji = "⚡";
+                        else if (type === "temp") emoji = "🔥";
+
+                        // จัดตั้งค่าการแสดงผลตัวอักษร/อิโมจิให้อยู่กึ่งกลางแกนสับพิกัดพอดี
+                        ctx.font = "14px Arial";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        
+                        // เขียนอิโมจิลงไปบนตำแหน่งพิกัดหลอดเกจตามมุมของเข็ม
+                        ctx.fillText(emoji, nx, ny);
+                        
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        function initGauges() {
+            charts['hr1'] = createGauge('gauge-hr1', 'hr');
+            charts['hr2'] = createGauge('gauge-hr2', 'hr');
+            charts['cur1'] = createGauge('gauge-cur1', 'current');
+            charts['cur2'] = createGauge('gauge-cur2', 'current');
+            charts['temp1'] = createGauge('gauge-temp1', 'temp');
+            charts['temp2'] = createGauge('gauge-temp2', 'temp');
+        }
+
+        // --- ระบบการทำงาน Dashboard ---
+        function startServices() {
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            fetchData();
+            setInterval(fetchData, 57000);
+        }
+
+        async function fetchData() {
+            const statusBox = document.getElementById('syncStatus');
+            const tableTop = document.getElementById('data-table-top');
+            const tableBottom = document.getElementById('data-table-bottom');
+            
+            statusBox.innerHTML = '<span class="spin text-blue-400 text-sm">⚙️</span>';
+
+            try {
+                const finalUrl = `${SCRIPT_URL}?t=${new Date().getTime()}`;
+                const response = await fetch(finalUrl);
+                const data = await response.json();
+                
+                // ฟังก์ชันสำหรับแปลงค่าข้อความให้เป็นตัวเลขเพื่อใช้เปรียบเทียบความถูกต้อง
+                const parseNum = (val) => {
+                    if (val === undefined || val === null) return NaN;
+                    let s = String(val).replace(/[^\d.-]/g, '');
+                    return parseFloat(s);
+                };
+
+                // เจาะจงฟังก์ชันหาค่า Real Time Data จาก Array Object ค้นหาแบบไม่สนเว้นวรรค/ตัวพิมพ์เล็กใหญ่
+                const findRealtimeValue = (dataArray, targetName) => {
+                    if (!dataArray || !Array.isArray(dataArray)) return null;
+                    const cleanTarget = String(targetName).replace(/\s+/g, '').toLowerCase();
+                    const found = dataArray.find(item => {
+                        if (!item.item) return false;
+                        return String(item.item).replace(/\s+/g, '').toLowerCase() === cleanTarget;
+                    });
+                    return found ? found.realtime : null;
+                };
+                
+                // เรนเดอร์ UPPER DATA (ช่อง B2:D13)
+                if (data && data.upperData) {
+                    let htmlTop = "";
+                    data.upperData.forEach(item => {
+                        let rtNum = parseNum(item.realtime);
+                        let nmNum = parseNum(item.normal);
+                        
+                        // กำหนดสีเริ่มต้นในกรณีเปรียบเทียบตัวเลขไม่ได้ ให้เป็นสีฟ้าเดิม
+                        let realtimeColor = "text-blue-400"; 
+                        
+                        if (!isNaN(rtNum) && !isNaN(nmNum)) {
+                            if (rtNum === nmNum) {
+                                realtimeColor = "text-green-500"; // ตรงกันเป็นสีเขียว
+                            } else {
+                                realtimeColor = "text-red-500";   // น้อยกว่าหรือมากกว่าเป็นสีแดง
+                            }
+                        } else if (item.realtime && item.normal) {
+                            // กรณีข้อมูลเป็นข้อความตัวอักษร ให้เทียบ String ตรงๆ
+                            let rtStr = String(item.realtime).trim().toLowerCase();
+                            let nmStr = String(item.normal).trim().toLowerCase();
+                            realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
+                        }
+
+                        htmlTop += `
+                            <tr class="border-b border-gray-900 row-update">
+                                <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
+                            </tr>`;
+                    });
+                    tableTop.innerHTML = htmlTop;
+                }
+
+                // เรนเดอร์ LOWER DATA (ช่อง F2:H13)
+                if (data && data.lowerData) {
+                    let htmlBottom = "";
+                    data.lowerData.forEach(item => {
+                        let rtNum = parseNum(item.realtime);
+                        let nmNum = parseNum(item.normal);
+                        
+                        let realtimeColor = "text-blue-400"; 
+                        
+                        if (!isNaN(rtNum) && !isNaN(nmNum)) {
+                            if (rtNum === nmNum) {
+                                realtimeColor = "text-green-500";
+                            } else {
+                                realtimeColor = "text-red-500";
+                            }
+                        } else if (item.realtime && item.normal) {
+                            let rtStr = String(item.realtime).trim().toLowerCase();
+                            let nmStr = String(item.normal).trim().toLowerCase();
+                            realtimeColor = (rtStr === nmStr) ? "text-green-500" : "text-red-500";
+                        }
+
+                        htmlBottom += `
+                            <tr class="border-b border-gray-900 row-update">
+                                <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
+                            </tr>`;
+                    });
+                    tableBottom.innerHTML = htmlBottom;
+                }
+
+                // 🛠️ ค้นหาและจับคู่ข้อมูลงัดเข้าเกจแต่ละตัวตามเงื่อนไขใหม่ของคุณ
+                
+                // 1. UPPER (Burner Time)
+                const rawHr1 = findRealtimeValue(data.upperData, 'Burner Time');
+                const valHr1 = rawHr1 !== null ? parseNum(rawHr1) : 1158;
+                updateGaugeValue('hr1', isNaN(valHr1) ? 0 : valHr1, 'val-hr1');
+
+                // 2. LOWER (Burner Time)
+                const rawHr2 = findRealtimeValue(data.lowerData, 'Burner Time');
+                const valHr2 = rawHr2 !== null ? parseNum(rawHr2) : 852;
+                updateGaugeValue('hr2', isNaN(valHr2) ? 0 : valHr2, 'val-hr2');
+
+                // 3. UPPER (Current Conveyor) -> ดึงข้อมูลจาก Current Blower Box 3 ของฝั่ง UPPER
+                const rawCur1 = findRealtimeValue(data.upperData, 'Current Blower Box 3');
+                const valCur1 = rawCur1 !== null ? parseNum(rawCur1) : 2.06;
+                updateGaugeValue('cur1', isNaN(valCur1) ? 0 : valCur1, 'val-cur1', true);
+
+                // 4. LOWER (Current Conveyor) -> ดึงข้อมูลจาก Current Blower Box 2 ของฝั่ง LOWER
+                const rawCur2 = findRealtimeValue(data.lowerData, 'Current Blower Box 2');
+                const valCur2 = rawCur2 !== null ? parseNum(rawCur2) : 2.05;
+                updateGaugeValue('cur2', isNaN(valCur2) ? 0 : valCur2, 'val-cur2', true);
+
+                // 5. UPPER (Temp) -> ดึงข้อมูลจาก Temp Box 2 ของฝั่ง UPPER
+                const rawTemp1 = findRealtimeValue(data.upperData, 'Temp Box 2');
+                const valTemp1 = rawTemp1 !== null ? parseNum(rawTemp1) : 250;
+                updateGaugeValue('temp1', isNaN(valTemp1) ? 0 : valTemp1, 'val-temp1');
+
+                // 6. LOWER (Temp) -> ดึงข้อมูลจาก Temp Box 3 ของฝั่ง LOWER
+                const rawTemp2 = findRealtimeValue(data.lowerData, 'Temp Box 3');
+                const valTemp2 = rawTemp2 !== null ? parseNum(rawTemp2) : 248;
+                updateGaugeValue('temp2', isNaN(valTemp2) ? 0 : valTemp2, 'val-temp2');
+
+                statusBox.innerHTML = '✅';
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                statusBox.innerHTML = '❌';
+            }
+        }
+
+        function updateGaugeValue(key, value, textId, isFloat = false) {
+            document.getElementById(textId).innerText = isFloat ? value.toFixed(2) : value;
+            if (charts[key]) {
+                charts[key].data.datasets[0].needleValue = value;
+                charts[key].update();
+            }
+        }
+
+        window.onload = () => document.getElementById('passInput').focus();
+    </script>
+</body>
+</html>
