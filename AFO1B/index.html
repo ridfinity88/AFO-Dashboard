@@ -39,51 +39,24 @@
         .dashboard-container { display: grid; grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right); gap: 8px; padding: 40px 10px 10px 10px; height: 100vh; max-height: 100vh; overflow: hidden; position: relative; }
         .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px; position: relative; }
 
-        /* จัดเรียงกลุ่มข้อมูลฝั่งซ้ายบน: วันเวลา -> สรุป -> อัปเดต */
+        /* จัดเรียงกลุ่มข้อมูลฝั่งซ้ายบน: ปุ่ม Home -> วันเวลา -> สถานะการอัปเดต */
         .header-info { 
             position: absolute; 
             top: 5px; 
             left: 10px; 
             z-index: 10; 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center; 
         }
-        .live-clock { background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; white-space: nowrap; font-weight: bold; color: #fff; }
+        .live-clock { background: #333; padding: 4px 8px; font-size: 0.7rem; border-radius: 4px; white-space: nowrap; font-weight: bold; color: #fff; height: 22px; display: flex; align-items: center; }
         #syncStatus { font-size: 0.9rem; }
-        
-        /* โครงสร้างกล่องสรุปตัวเลข ปรับขนาดให้กระชับเข้ากับแถววันเวลา */
-        .summary-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #1a1a1a;
-            padding: 3px 10px;
-            border-radius: 4px;
-            border: 1px solid #333;
-        }
-        .summary-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem; 
-            font-weight: bold;
-            color: #ddd;
-        }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .dot-blue { background-color: var(--card-blue); }
-        .dot-green { background-color: var(--card-green); }
-        .dot-yellow { background-color: var(--card-yellow); }
-        .dot-red { background-color: var(--card-red); }
 
         /* หัวข้อใหญ่อยู่ตรงกลางด้านบน */
         .main-title { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 1.1rem; font-weight: bold; color: #ccc; z-index: 5; text-transform: uppercase; }
-        
-        /* ปุ่มหน้าหลักขวาบน */
-        .home-btn-container { position: absolute; top: 4px; right: 110px; z-index: 10; }
 
         /* ลายน้ำมุมขวาบน */
-        .watermark { position: absolute; top: 11px; right: 10px; font-size: 0.6rem; color: rgba(255, 255, 255, 0.2); z-index: 10; font-weight: bold; select-none; }
+        .watermark { position: absolute; top: 11px; right: 10px; font-size: 0.6rem; color: rgba(255, 255, 255, 0.2); z-index: 10; font-weight: bold; user-select: none; }
 
         /* Animation สำหรับไอคอนโหลด */
         .spin { animation: spin 1s linear infinite; display: inline-block; }
@@ -98,15 +71,16 @@
             background: var(--card-bg); 
             border: 1px solid var(--card-border); 
             border-radius: 4px; 
-            padding: 6px 12px; 
+            padding: 8px 12px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: space-between; 
+            justify-content: flex-start; 
+            gap: 4px;
             width: 260px;
             height: 100%;
             overflow: hidden;
         }
-        .gauge-container { position: relative; width: 100%; max-width: 140px; margin: 0 auto; }
+        .gauge-container { position: relative; width: 100%; max-width: 135px; margin: 0 auto; }
         .gauge-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 20px; }
     </style>
 </head>
@@ -128,23 +102,14 @@
         <main class="dashboard-container">
             
             <div class="header-info">
+                <a href="../index.html" class="flex items-center justify-center bg-[#333] hover:bg-[#444] transition-colors text-white rounded border border-[#555] font-bold text-[0.7rem] h-[22px] px-2" title="กลับหน้าหลัก">
+                    🏠 Home
+                </a>
                 <div class="live-clock" id="clock">00/00/0000 00:00:00</div>
-                <div class="summary-container">
-                    <div class="summary-item"><span class="dot dot-blue"></span><span id="sumBlue">1</span></div>
-                    <div class="summary-item"><span class="dot dot-green"></span><span id="sumGreen">1</span></div>
-                    <div class="summary-item"><span class="dot dot-yellow"></span><span id="sumYellow">1</span></div>
-                    <div class="summary-item"><span class="dot dot-red"></span><span id="sumRed">1</span></div>
-                </div>
                 <div id="syncStatus">✅</div>
             </div>
 
             <div class="main-title">Machine Dashboard - Realtime</div>
-
-            <div class="home-btn-container">
-                <a href="../index.html" class="flex items-center justify-center bg-[#333] hover:bg-[#444] transition-colors text-white rounded [padding:3px_8px] border border-[#555] font-bold text-[0.7rem]" title="กลับหน้าหลัก">
-                    🏠 Home
-                </a>
-            </div>
 
             <div class="watermark">RiDFinity Design</div>
 
@@ -201,75 +166,87 @@
             <div class="grid grid-cols-2 grid-rows-3 gap-3 justify-items-end h-100 overflow-hidden">
                 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 1 (ชั่วโมง)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 1 (ชั่วโมง) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-hr1"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-hr1" class="text-xl font-bold tracking-tight">1158</span>
                             <span class="text-[9px] text-gray-400">ชั่วโมง</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 2 (ชั่วโมง)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 2 (ชั่วโมง) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-hr2"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-hr2" class="text-xl font-bold tracking-tight">852</span>
                             <span class="text-[9px] text-gray-400">ชั่วโมง</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 1 (Current)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 1 (Current) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-cur1"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-cur1" class="text-xl font-bold tracking-tight">2.06</span>
                             <span class="text-[9px] text-gray-400">แอมป์ (A)</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 2 (Current)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 2 (Current) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-cur2"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-cur2" class="text-xl font-bold tracking-tight">2.05</span>
                             <span class="text-[9px] text-gray-400">แอมป์ (A)</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 1 (Temp)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 1 (Temp) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-temp1"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-temp1" class="text-xl font-bold tracking-tight">250</span>
                             <span class="text-[9px] text-gray-400">องศาเซลเซียส</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
                 <div class="gauge-card">
-                    <div class="flex justify-between items-center text-[11px] font-bold"><span class="text-gray-300">ชั้นที่ 2 (Temp)</span><span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span></div>
-                    <div class="gauge-container">
+                    <div class="flex justify-between items-center text-[10px] font-bold border-b border-gray-800 pb-1 w-full">
+                        <span class="text-gray-300">ชั้นที่ 2 (Temp) <span class="text-[#10b981] ml-1">● Status OK</span></span>
+                        <span class="text-gray-500 text-[9px]">อัปเดตล่าสุด</span>
+                    </div>
+                    <div class="gauge-container mt-2">
                         <canvas id="gauge-temp2"></canvas>
                         <div class="gauge-center-text">
                             <span id="val-temp2" class="text-xl font-bold tracking-tight">248</span>
                             <span class="text-[9px] text-gray-400">องศาเซลเซียส</span>
                         </div>
                     </div>
-                    <div class="text-center"><span class="text-[9px] px-2.5 py-0.5 rounded-full bg-[#062f22] text-[#10b981] font-bold border border-[#10b981]/20">● Status OK</span></div>
                 </div>
 
             </div>
