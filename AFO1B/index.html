@@ -67,29 +67,42 @@
         .row-update { animation: highlight 1s ease-out; }
         @keyframes highlight { 0% { background: rgba(33, 150, 243, 0.1); } 100% { background: transparent; } }
 
-        /* การ์ดเกจย่อยฝั่งขวา (ปรับให้ยืดหยุ่นและจัดกลางเสถียรขึ้น) */
+        /* การ์ดเกจย่อยฝั่งขวา (ปรับปรับโฉมให้โคตรเท่ สไตล์ High-Tech Dashboard) */
         .gauge-card { 
-            background: var(--card-bg); 
-            border: 1px solid var(--card-border); 
-            border-radius: 4px; 
+            background: #060608; 
+            border: 1px solid #14161d; 
+            border-radius: 6px; 
             padding: 8px 12px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: space-between; /* แยกส่วนหัวข้อและตัวกราฟออกจากกัน */
+            justify-content: space-between; 
             width: 260px;
             height: 100%;
             overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
+            transition: border 0.3s;
+        }
+        .gauge-card:hover {
+            border-color: #2196F3;
         }
         .gauge-container { 
             position: relative; 
             width: 100%; 
-            max-width: 145px; 
-            margin: auto; /* บังคับให้อยู่กึ่งกลางแนวนอนและแนวตั้งภายในพื้นที่ที่เหลือ */
+            max-width: 155px; 
+            margin: auto; 
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .gauge-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 28px; }
+        .gauge-center-text { 
+            position: absolute; 
+            inset: 0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding-top: 25px; 
+        }
     </style>
 </head>
 <body>
@@ -179,8 +192,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-hr1"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-hr1" class="text-xl font-black tracking-tight text-white">1158</span>
-                            <span class="text-[9px] text-gray-400">ชั่วโมง</span>
+                            <span id="val-hr1" class="text-2xl font-black tracking-tight text-white font-mono">1158</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">ชั่วโมง</span>
                         </div>
                     </div>
                 </div>
@@ -192,8 +205,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-hr2"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-hr2" class="text-xl font-black tracking-tight text-white">852</span>
-                            <span class="text-[9px] text-gray-400">ชั่วโมง</span>
+                            <span id="val-hr2" class="text-2xl font-black tracking-tight text-white font-mono">852</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">ชั่วโมง</span>
                         </div>
                     </div>
                 </div>
@@ -205,8 +218,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-cur1"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-cur1" class="text-xl font-black tracking-tight text-white">2.06</span>
-                            <span class="text-[9px] text-gray-400">แอมป์ (A)</span>
+                            <span id="val-cur1" class="text-2xl font-black tracking-tight text-white font-mono">2.06</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">แอมป์ (A)</span>
                         </div>
                     </div>
                 </div>
@@ -218,8 +231,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-cur2"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-cur2" class="text-xl font-black tracking-tight text-white">2.05</span>
-                            <span class="text-[9px] text-gray-400">แอมป์ (A)</span>
+                            <span id="val-cur2" class="text-2xl font-black tracking-tight text-white font-mono">2.05</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">แอมป์ (A)</span>
                         </div>
                     </div>
                 </div>
@@ -231,8 +244,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-temp1"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-temp1" class="text-xl font-black tracking-tight text-white">250</span>
-                            <span class="text-[9px] text-gray-400">องศาเซลเซียส</span>
+                            <span id="val-temp1" class="text-2xl font-black tracking-tight text-white font-mono">250</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">องศาเซลเซียส</span>
                         </div>
                     </div>
                 </div>
@@ -244,8 +257,8 @@
                     <div class="gauge-container flex-grow mt-1">
                         <canvas id="gauge-temp2"></canvas>
                         <div class="gauge-center-text">
-                            <span id="val-temp2" class="text-xl font-black tracking-tight text-white">248</span>
-                            <span class="text-[9px] text-gray-400">องศาเซลเซียส</span>
+                            <span id="val-temp2" class="text-2xl font-black tracking-tight text-white font-mono">248</span>
+                            <span class="text-[9px] text-gray-400 mt-0.5">องศาเซลเซียส</span>
                         </div>
                     </div>
                 </div>
@@ -298,37 +311,48 @@
             }
         }
 
-        // --- ระบบการจัดการเกจวัด (Chart.js Plugins) ---
+        // --- ระบบการจัดการเกจวัดแบบอัพเกรด (Futuristic Glow Pointer & Soft Arc) ---
         function createGauge(canvasId, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            let dataSegments = []; 
-            let segmentColors = [];
+            let maxVal = 100;
+            let zones = [];
             
-            // 1. ตั้งค่ากลุ่ม Burner Time (0 - 1700)
+            // ออกแบบช่วงข้อมูลและสเกลจำกัดสูงสุด
             if (type === 'hr') {
-                dataSegments = [1200, 250, 250]; // เขียว: 0-1200, เหลือง: 1201-1450, แดง: 1451-1700
-                segmentColors = ['#2e7d32', '#fbc02d', '#c62828'];
-            }
-            // 2. ตั้งค่ากลุ่ม Current Conveyor (0 - 4.0 A) -> เขียวอยู่ตรงกลาง ขนาบด้วยเหลืองและแดง
-            else if (type === 'current') {
-                // ช่วงข้อมูล: แดงต่ำ(0-1.8) -> เหลืองต่ำ(1.8-1.95) -> เขียวปกติ(1.95-2.25) -> เหลืองสูง(2.25-2.4) -> แดงสูง(2.4-4.0)
-                dataSegments = [1.80, 0.15, 0.30, 0.15, 1.60]; 
-                segmentColors = ['#c62828', '#fbc02d', '#2e7d32', '#fbc02d', '#c62828'];
-            }
-            // 3. ตั้งค่ากลุ่ม Temp (0 - 350 °C) -> เขียวอยู่ตรงกลาง ขนาบด้วยเหลืองและแดง
-            else if (type === 'temp') {
-                // ช่วงข้อมูล: แดงต่ำ(0-235) -> เหลืองต่ำ(235-240) -> เขียวปกติ(240-255) -> เหลืองสูง(255-260) -> แดงสูง(260-350)
-                dataSegments = [235, 5, 15, 5, 90];
-                segmentColors = ['#c62828', '#fbc02d', '#2e7d32', '#fbc02d', '#c62828'];
+                maxVal = 1700;
+                zones = [
+                    { limit: 1200, color: '#10b981' }, // เขียวสด
+                    { limit: 1450, color: '#f59e0b' }, // เหลืองส้ม
+                    { limit: 1700, color: '#ef4444' }  // แดง
+                ];
+            } else if (type === 'current') {
+                maxVal = 4.0;
+                zones = [
+                    { limit: 1.80, color: '#ef4444' },
+                    { limit: 1.95, color: '#f59e0b' },
+                    { limit: 2.25, color: '#10b981' },
+                    { limit: 2.40, color: '#f59e0b' },
+                    { limit: 4.00, color: '#ef4444' }
+                ];
+            } else if (type === 'temp') {
+                maxVal = 350;
+                zones = [
+                    { limit: 235, color: '#ef4444' },
+                    { limit: 240, color: '#f59e0b' },
+                    { limit: 255, color: '#10b981' },
+                    { limit: 260, color: '#f59e0b' },
+                    { limit: 350, color: '#ef4444' }
+                ];
             }
 
+            // ใช้โครงสร้าง Doughnut พื้นฐานแบบโปร่งแสง เพื่อเปิดทางให้ลากเส้น Custom Arc และเข็มเรืองแสงเอง
             return new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: dataSegments,
-                        backgroundColor: segmentColors,
+                        data: [maxVal],
+                        backgroundColor: ['rgba(255,255,255,0.03)'],
                         borderWidth: 0,
                         needleValue: 0
                     }]
@@ -336,53 +360,87 @@
                 options: {
                     rotation: -90,
                     circumference: 180,
-                    cutout: '83%', // ปรับเส้นผ่านศูนย์กลางให้บางลง เรียบหรูสไตล์ Dashboard รุ่นใหม่
+                    cutout: '88%',
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: { tooltip: { enabled: false }, legend: { display: false } },
-                    layout: { padding: { bottom: 6 } }
+                    layout: { padding: { top: 10, bottom: 12, left: 10, right: 10 } }
                 },
                 plugins: [{
-                    id: 'gaugeNeedle',
+                    id: 'futuristicGauge',
                     afterDatasetsDraw(chart) {
-                        const { ctx, data } = chart;
-                        const score = data.datasets[0].needleValue;
-                        const meta = chart.getDatasetMeta(0);
-                        
-                        let factor = 0;
-                        if (type === 'hr') factor = score / 1700;       // สเกลสูงสุดรวมเป็น 1700
-                        else if (type === 'current') factor = score / 4; // สเกลสูงสุดรวมเป็น 4.0
-                        else if (type === 'temp') factor = score / 350;  // สเกลสูงสุดรวมเป็น 350
-
-                        if (factor > 1) factor = 1; if (factor < 0) factor = 0;
-
-                        // แปลงสัดส่วน factor ให้อยู่บนระบบมุมวาดพิกัดครึ่งวงกลมด้านบนของ HTML5 Canvas
-                        const targetAngle = -Math.PI + (factor * Math.PI);
+                        const { ctx } = chart;
+                        const score = chart.data.datasets[0].needleValue;
                         
                         const cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
-                        const cy = chart.chartArea.bottom - 4;
-                        
-                        // คำนวณรัศมีให้อยู่กึ่งกลางความหนาของหลอดพอดี
-                        const radius = (meta.data[0].outerRadius + meta.data[0].innerRadius) / 2;
-                        
-                        const nx = cx + radius * Math.cos(targetAngle);
-                        const ny = cy + radius * Math.sin(targetAngle);
+                        const cy = chart.chartArea.bottom - 2;
+                        const outerR = chart.getDatasetMeta(0).data[0].outerRadius;
+                        const innerR = chart.getDatasetMeta(0).data[0].innerRadius;
+                        const trackWidth = outerR - innerR;
+                        const centerR = (outerR + innerR) / 2;
 
                         ctx.save();
-                        
-                        // เลือกอิโมจิให้ตรงตามกลุ่มประเภทเกจที่ส่งมา
-                        let emoji = "🍗"; 
-                        if (type === "current") emoji = "⚡";
-                        else if (type === "temp") emoji = "🔥";
 
-                        // จัดตั้งค่าการแสดงผลตัวอักษร/อิโมจิให้อยู่กึ่งกลางแกนสับพิกัดพอดี
-                        ctx.font = "14px Arial";
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
+                        // 1. วาดเส้นพื้นหลังหน้าปัดสีเทาเข้มแบบล้ำๆ (Background Track)
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, centerR, -Math.PI, 0, false);
+                        ctx.strokeStyle = '#161920';
+                        ctx.lineWidth = trackWidth;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+
+                        // 2. วาดขอบแถบสีตาม Zone (Indicator Arc) บนพิกัดกึ่งกลาง
+                        let startAngle = -Math.PI;
+                        let lastLimit = 0;
                         
-                        // เขียนอิโมจิลงไปบนตำแหน่งพิกัดหลอดเกจตามมุมของเข็ม
-                        ctx.fillText(emoji, nx, ny);
+                        zones.forEach(zone => {
+                            let endFactor = zone.limit / maxVal;
+                            if (endFactor > 1) endFactor = 1;
+                            let endAngle = -Math.PI + (endFactor * Math.PI);
+                            
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, outerR + 3, startAngle, endAngle, false);
+                            ctx.strokeStyle = zone.color + '33'; // โปร่งแสง 20% สำหรับ Background เส้นขอบ
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                            
+                            startAngle = endAngle;
+                        });
+
+                        // 3. คำนวณหาตำแหน่งของเข็มชี้จุดปัจจุบัน
+                        let factor = score / maxVal;
+                        if (factor > 1) factor = 1; if (factor < 0) factor = 0;
+                        const needleAngle = -Math.PI + (factor * Math.PI);
+
+                        // ค้นหาสีเข็มตาม Zone จริงของค่าที่อ่านได้มา ณ ปัจจุบัน
+                        let activeColor = '#2196F3';
+                        for (let i = 0; i < zones.length; i++) {
+                            if (score <= zones[i].limit) {
+                                activeColor = zones[i].color;
+                                break;
+                            }
+                        }
+
+                        // 4. วาดตัวชี้แบบ Laser Line + Glow Pointer Head
+                        ctx.beginPath();
+                        ctx.moveTo(cx + (innerR - 4) * Math.cos(needleAngle), cy + (innerR - 4) * Math.sin(needleAngle));
+                        ctx.lineTo(cx + (outerR + 2) * Math.cos(needleAngle), cy + (outerR + 2) * Math.sin(needleAngle));
+                        ctx.strokeStyle = activeColor;
+                        ctx.lineWidth = 3;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+
+                        // วาดจุดหัวนำสายตาแบบเรืองแสง (Glow Node) ที่ปลายเข็ม
+                        const nodeX = cx + (outerR + 2) * Math.cos(needleAngle);
+                        const nodeY = cy + (outerR + 2) * Math.sin(needleAngle);
                         
+                        ctx.beginPath();
+                        ctx.arc(nodeX, nodeY, 4, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#fff';
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = activeColor;
+                        ctx.fill();
+
                         ctx.restore();
                     }
                 }]
