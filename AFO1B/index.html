@@ -14,7 +14,7 @@
             --width-col-right: auto; 
             --bg-color: #000;
             --card-bg: #000; /* ปรับเป็นสีดำสนิทให้เนียนไปกับพื้นหลัง */
-            --card-border: #1a1a1a; /* เส้นขอบโทนเข้มบางๆ ไม่ให้หลอกตา */
+            --card-border: #2196F3; /* 🛠️ เปลี่ยนสีขอบการ์ดหลักเริ่มต้นเป็นสีฟ้า */
             --card-gray: #424242;
             --card-green: #2e7d32;
             --card-red: #c62828;
@@ -38,7 +38,9 @@
 
         #dashboardPage { display: none; flex-direction: column; height: 100vh; max-height: 100vh; overflow: hidden; background: var(--bg-color); }
         .dashboard-container { display: grid; grid-template-columns: var(--width-col-left) var(--width-col-center) var(--width-col-right); gap: 8px; padding: 40px 10px 10px 10px; height: 100vh; max-height: 100vh; overflow: hidden; position: relative; }
-        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px; position: relative; }
+        
+        /* 🛠️ ปรับแต่งขอบของการ์ดทั่วไปให้เป็นสีฟ้าและมน 6px เหมือนการ์ดเกจ */
+        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 6px; position: relative; }
 
         /* จัดเรียงกลุ่มข้อมูลฝั่งซ้ายบน: ปุ่ม Home -> วันเวลา -> สถานะการอัปเดต */
         .header-info { 
@@ -67,10 +69,10 @@
         .row-update { animation: highlight 1s ease-out; }
         @keyframes highlight { 0% { background: rgba(33, 150, 243, 0.1); } 100% { background: transparent; } }
 
-        /* การ์ดเกจย่อยฝั่งขวา (ปรับเปลี่ยนให้ขอบเป็นสีฟ้าค้างไว้ถาวร) */
+        /* การ์ดเกจย่อยฝั่งขวา */
         .gauge-card { 
             background: #060608; 
-            border: 1px solid #2196F3; /* 🛠️ เปลี่ยนจากสีมืดเป็นสีฟ้าค้างไว้เลยทุกการ์ด */
+            border: 1px solid #2196F3; 
             border-radius: 6px; 
             padding: 8px 12px; 
             display: flex; 
@@ -93,7 +95,7 @@
             justify-content: center;
         }
         
-        /* 🛠️ ปรับแต่งให้ตัวเลขอยู่กึ่งกลางวงกลมอย่างสมบูรณ์แบบ */
+        /* ปรับแต่งให้ตัวเลขอยู่กึ่งกลางวงกลมอย่างสมบูรณ์แบบ */
         .gauge-center-text { 
             position: absolute; 
             bottom: -5px; /* ปรับพิกัดตัวเลขให้อยู่กลางตามตำแหน่งหน้าปัดใหม่ */
@@ -365,7 +367,7 @@
                 options: {
                     rotation: -90,
                     circumference: 180,
-                    cutout: '75%', /* 🛠️ ปรับลดจาก 88% เป็น 75% เพื่อขยายแถบสเกลสีให้มีขนาดใหญ่ หนา และเห็นชัดเจนขึ้น */
+                    cutout: '75%', /* ปรับลดจาก 88% เป็น 75% เพื่อขยายแถบสเกลสีให้มีขนาดใหญ่ หนา และเห็นชัดเจนขึ้น */
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: { tooltip: { enabled: false }, legend: { display: false } }
@@ -405,7 +407,7 @@
                             ctx.beginPath();
                             ctx.arc(cx, cy, centerR, startAngle, endAngle, false);
                             ctx.strokeStyle = zone.color;
-                            ctx.lineWidth = trackWidth; /* 🛠️ บังคับความหนาของสีโซนให้เต็มแทร็คหลัก เพื่อให้สเกลสีใหญ่สะใจ */
+                            ctx.lineWidth = trackWidth; /* บังคับความหนาของสีโซนให้เต็มแทร็คหลัก เพื่อให้สเกลสีใหญ่สะใจ */
                             ctx.stroke();
                             
                             startAngle = endAngle;
@@ -417,25 +419,23 @@
                         const needleAngle = -Math.PI + (factor * Math.PI);
 
                         // 4. คำนวณตำแหน่งพิกัดปลายเข็ม (Center ของแนวสเกลสี)
-                        const textX = cx + (centerR) * Math.cos(needleAngle);
-                        const textY = cy + (centerR) * Math.sin(needleAngle);
+                        const textX = cx + centerR * Math.cos(needleAngle);
+                        const textY = cy + centerR * Math.sin(needleAngle);
                         
-                        ctx.translate(textX, textY);
-                        ctx.rotate(needleAngle + Math.PI / 2); // หมุนวัตถุให้หันหน้าตามมุมของวงกลมหน้าปัด
-
-                        // 🛠️ [แก้ไขจากวงกลมสีขาวเป็นโปร่งใส และขอบฟ้าเป็นขอบสีขาวหนาขึ้น]
+                        // 🛠️ แก้ไขพิกัดการวาดวงกลมและอิโมจิให้แสดงผลกลางหลอดพลังอย่างถูกต้องและไม่หลุดขอบ
                         ctx.beginPath();
-                        ctx.arc(0, 0, 14, 0, 2 * Math.PI); // วาดรัศมีวงกลมครอบคลุมตัวอิโมจิพอดี (ขนาด 14px)
-                        ctx.fillStyle = 'transparent'; // เปลี่ยนจาก #ffffff เป็น transparent (โปร่งใส)
+                        ctx.arc(textX, textY, 11, 0, 2 * Math.PI); // 🛠️ ลดขนาดรัศมีวงกลมพื้นหลังจาก 14px เป็น 11px ให้ฟิตพอดีหลอดพลัง
+                        ctx.fillStyle = 'transparent'; 
                         ctx.fill();
-                        ctx.strokeStyle = '#ffffff'; // เปลี่ยนจากสีฟ้า #2196F3 เป็นสีขาว #ffffff
-                        ctx.lineWidth = 2.5; // เพิ่มความหนาของเส้นขอบเล็กน้อยจากเดิม 1.5 เป็น 2.5
+                        ctx.strokeStyle = '#ffffff'; 
+                        ctx.lineWidth = 2.5; 
                         ctx.stroke();
 
                         // 5. วาดตัวชี้บอกตำแหน่งด้วย อิโมจิ (Emoji Pointer)
-                        ctx.font = "16px Arial"; // ปรับลดขนาดเล็กน้อยให้ฟิตพอดีกับวงกลมสีขาวฉากหลังอย่างสวยงาม
+                        ctx.font = "12px Arial"; // 🛠️ ลดขนาดฟอนต์อิโมจิจาก 16px เป็น 12px เพื่อความสวยงามสมส่วนไม่ล้นวงกลม
+                        ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
-                        ctx.fillText(emoji, 0, 0);
+                        ctx.fillText(emoji, textX, textY); // 🛠️ สั่งให้วาดลงพิกัดตรงๆ แทนการ translate ป้องกันอาการเพี้ยน
 
                         ctx.restore();
                     }
