@@ -135,8 +135,7 @@
                                     <th class="text-center pb-1 pr-4 w-[28%]">Real Time Data</th>
                                     <th class="text-right pb-1 w-[22%]">ค่าปกติ</th>
                                 </tr>
-                            </thead>
-                        </table>
+                            </table>
                         <table class="w-full text-[11px]">
                             <tbody id="data-table-top"></tbody>
                         </table>
@@ -335,8 +334,6 @@
                         const { ctx, data } = chart;
                         const score = data.datasets[0].needleValue;
                         const meta = chart.getDatasetMeta(0);
-                        const startAngle = meta.data[0].startAngle;
-                        const totalCircumference = Math.PI;
                         
                         let factor = 0;
                         if (type === 'hr') factor = score / 1500;
@@ -345,11 +342,13 @@
 
                         if (factor > 1) factor = 1; if (factor < 0) factor = 0;
 
-                        const targetAngle = startAngle + (factor * totalCircumference);
+                        // 🛠️ แก้ไขการคำนวณตำแหน่งมุมตรงนี้: แปลงสัดส่วน factor ให้อยู่บนระบบมุมวาดพิกัดครึ่งวงกลมด้านบนของ HTML5 Canvas
+                        const targetAngle = -Math.PI + (factor * Math.PI);
+                        
                         const cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
                         const cy = chart.chartArea.bottom - 4;
                         
-                        // คำนวณรัศมีให้อยู่กึ่งกลางความหนาของหลอด (ขอบนอก + ขอบใน หาร 2) เพื่อไม่ให้อิโมจิออกนอกหลอดพลัง
+                        // คำนวณรัศมีให้อยู่กึ่งกลางความหนาของหลอดพอดี
                         const radius = (meta.data[0].outerRadius + meta.data[0].innerRadius) / 2;
                         
                         const nx = cx + radius * Math.cos(targetAngle);
