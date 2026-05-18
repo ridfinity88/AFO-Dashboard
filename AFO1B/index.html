@@ -8,7 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --width-col-left: max-content; 
+            /* ปรับความกว้างคอลัมน์ซ้ายจาก max-content เป็น 340px เพื่อให้ดูกว้างและมีพื้นที่สำหรับชื่อหัวข้อใหม่ */
+            --width-col-left: 340px; 
             --width-col-center: 1fr; 
             --width-col-right: auto; 
             --bg-color: #000;
@@ -121,10 +122,12 @@
             <div class="watermark">RiDFinity Design</div>
 
             <div class="grid grid-rows-2 gap-3 min-w-[280px] h-100 overflow-hidden">
+                
                 <div class="card p-3 flex flex-col overflow-hidden">
-                    <div class="flex justify-between items-center mb-2 flex-shrink-0">
+                    <div class="flex justify-between items-center mb-1 flex-shrink-0 text-[10px] font-bold border-b border-gray-900 pb-1 w-full">
+                        <span class="text-gray-300">UPPER DATA <span class="text-[#10b981] ml-1">● Status OK</span></span>
                     </div>
-                    <div class="overflow-y-auto flex-grow class-scroll">
+                    <div class="overflow-y-auto flex-grow class-scroll mt-1">
                         <table class="w-full text-[11px]">
                             <thead class="text-blue-400 border-b border-gray-900 text-left sticky top-0 bg-[#000] z-10">
                                 <tr>
@@ -141,9 +144,10 @@
                 </div>
 
                 <div class="card p-3 flex flex-col overflow-hidden">
-                    <div class="flex justify-between items-center mb-2 flex-shrink-0">
+                    <div class="flex justify-between items-center mb-1 flex-shrink-0 text-[10px] font-bold border-b border-gray-900 pb-1 w-full">
+                        <span class="text-gray-300">LOWER DATA <span class="text-[#10b981] ml-1">● Status OK</span></span>
                     </div>
-                    <div class="overflow-y-auto flex-grow class-scroll">
+                    <div class="overflow-y-auto flex-grow class-scroll mt-1">
                         <table class="w-full text-[11px]">
                             <thead class="text-blue-400 border-b border-gray-900 text-left sticky top-0 bg-[#000] z-10">
                                 <tr>
@@ -401,7 +405,6 @@
                 if (data && data.table) {
                     let html = "";
                     data.table.forEach(item => {
-                        // โครงสร้างเดิมถูกเก็บไว้เพื่อไม่ให้เกิด JS Error ตอนรันฟังก์ชันเดิม
                         const statusColor = (item.status === 'Running' || item.status === 'OK') ? 'text-green-500' : 'text-yellow-500';
                         html += `
                             <tr class="border-b border-gray-900 row-update">
