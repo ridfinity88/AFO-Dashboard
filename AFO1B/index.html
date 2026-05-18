@@ -481,6 +481,12 @@
                     return parseFloat(s);
                 };
 
+                // ฟังก์ชันช่วยจัดฟอร์แมตทศนิยม 2 ตำแหน่ง (ถ้าไม่ใช่วาลูตัวเลขให้ส่งค่าเดิมกลับไป)
+                const formatDisplayValue = (val) => {
+                    let num = parseNum(val);
+                    return !isNaN(num) ? num.toFixed(2) : val;
+                };
+
                 const findRealtimeValue = (dataArray, targetName) => {
                     if (!dataArray || !Array.isArray(dataArray)) return null;
                     const cleanTarget = String(targetName).replace(/\s+/g, '').toLowerCase();
@@ -515,8 +521,8 @@
                         htmlTop += `
                             <tr class="border-b border-gray-900 row-update">
                                 <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
-                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${formatDisplayValue(item.realtime)}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${formatDisplayValue(item.normal)}</td>
                             </tr>`;
                     });
                     tableTop.innerHTML = htmlTop;
@@ -546,8 +552,8 @@
                         htmlBottom += `
                             <tr class="border-b border-gray-900 row-update">
                                 <td class="py-2 text-gray-300 font-bold pr-4 w-[50%]">${item.item}</td>
-                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${item.realtime}</td>
-                                <td class="text-right text-green-500 font-bold w-[22%]">${item.normal}</td>
+                                <td class="text-center ${realtimeColor} font-bold pr-4 w-[28%]">${formatDisplayValue(item.realtime)}</td>
+                                <td class="text-right text-green-500 font-bold w-[22%]">${formatDisplayValue(item.normal)}</td>
                             </tr>`;
                     });
                     tableBottom.innerHTML = htmlBottom;
