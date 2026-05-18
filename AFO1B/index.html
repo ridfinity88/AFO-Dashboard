@@ -348,24 +348,28 @@
                         const targetAngle = startAngle + (factor * totalCircumference);
                         const cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
                         const cy = chart.chartArea.bottom - 4;
+                        
+                        // คำนวณรัศมีให้อยู่กึ่งกลางความหนาของหลอด (ขอบนอก + ขอบใน หาร 2) เพื่อไม่ให้อิโมจิออกนอกหลอดพลัง
                         const radius = (meta.data[0].outerRadius + meta.data[0].innerRadius) / 2;
                         
                         const nx = cx + radius * Math.cos(targetAngle);
                         const ny = cy + radius * Math.sin(targetAngle);
 
                         ctx.save();
-                        ctx.beginPath();
-                        ctx.arc(nx, ny, 7, 0, 2 * Math.PI);
-                        ctx.fillStyle = '#222f47';
-                        ctx.fill();
-                        ctx.lineWidth = 1.5;
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.stroke();
+                        
+                        // เลือกอิโมจิให้ตรงตามกลุ่มประเภทเกจที่ส่งมา
+                        let emoji = "🍗"; 
+                        if (type === "current") emoji = "⚡";
+                        else if (type === "temp") emoji = "🔥";
 
-                        ctx.beginPath();
-                        ctx.arc(nx, ny, 3, 0, 2 * Math.PI);
-                        ctx.fillStyle = '#fbc02d';
-                        ctx.fill();
+                        // จัดตั้งค่าการแสดงผลตัวอักษร/อิโมจิให้อยู่กึ่งกลางแกนสับพิกัดพอดี
+                        ctx.font = "14px Arial";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        
+                        // เขียนอิโมจิลงไปบนตำแหน่งพิกัดหลอดเกจตามมุมของเข็ม
+                        ctx.fillText(emoji, nx, ny);
+                        
                         ctx.restore();
                     }
                 }]
