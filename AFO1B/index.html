@@ -135,7 +135,8 @@
                                     <th class="text-center pb-1 pr-4 w-[28%]">Real Time Data</th>
                                     <th class="text-right pb-1 w-[22%]">ค่าปกติ</th>
                                 </tr>
-                            </table>
+                            </thead>
+                        </table>
                         <table class="w-full text-[11px]">
                             <tbody id="data-table-top"></tbody>
                         </table>
@@ -411,6 +412,17 @@
                     let s = String(val).replace(/[^\d.-]/g, '');
                     return parseFloat(s);
                 };
+
+                // เจาะจงฟังก์ชันหาค่า Real Time Data จาก Array Object ค้นหาแบบไม่สนเว้นวรรค/ตัวพิมพ์เล็กใหญ่
+                const findRealtimeValue = (dataArray, targetName) => {
+                    if (!dataArray || !Array.isArray(dataArray)) return null;
+                    const cleanTarget = String(targetName).replace(/\s+/g, '').toLowerCase();
+                    const found = dataArray.find(item => {
+                        if (!item.item) return false;
+                        return String(item.item).replace(/\s+/g, '').toLowerCase() === cleanTarget;
+                    });
+                    return found ? found.realtime : null;
+                };
                 
                 // เรนเดอร์ UPPER DATA (ช่อง B2:D13)
                 if (data && data.upperData) {
@@ -476,13 +488,37 @@
                     tableBottom.innerHTML = htmlBottom;
                 }
 
-                // อัปเดตค่าของเกจวัด (ส่วนการทำงานเดิมยังอยู่ครบถ้วน)
-                updateGaugeValue('hr1', 1158, 'val-hr1');
-                updateGaugeValue('hr2', 852, 'val-hr2');
-                updateGaugeValue('cur1', 2.06, 'val-cur1', true);
-                updateGaugeValue('cur2', 2.05, 'val-cur2', true);
-                updateGaugeValue('temp1', 250, 'val-temp1');
-                updateGaugeValue('temp2', 248, 'val-temp2');
+                // 🛠️ ค้นหาและจับคู่ข้อมูลงัดเข้าเกจแต่ละตัวตามเงื่อนไขใหม่ของคุณ
+                
+                // 1. UPPER (Burner Time)
+                const rawHr1 = findRealtimeValue(data.upperData, 'Burner Time');
+                const valHr1 = rawHr1 !== null ? parseNum(rawHr1) : 1158;
+                updateGaugeValue('hr1', isNaN(valHr1) ? 0 : valHr1, 'val-hr1');
+
+                // 2. LOWER (Burner Time)
+                const rawHr2 = findRealtimeValue(data.lowerData, 'Burner Time');
+                const valHr2 = rawHr2 !== null ? parseNum(rawHr2) : 852;
+                updateGaugeValue('hr2', isNaN(valHr2) ? 0 : valHr2, 'val-hr2');
+
+                // 3. UPPER (Current Conveyor) -> ดึงข้อมูลจาก Current Blower Box 3 ของฝั่ง UPPER
+                const rawCur1 = findRealtimeValue(data.upperData, 'Current Blower Box 3');
+                const valCur1 = rawCur1 !== null ? parseNum(rawCur1) : 2.06;
+                updateGaugeValue('cur1', isNaN(valCur1) ? 0 : valCur1, 'val-cur1', true);
+
+                // 4. LOWER (Current Conveyor) -> ดึงข้อมูลจาก Current Blower Box 2 ของฝั่ง LOWER
+                const rawCur2 = findRealtimeValue(data.lowerData, 'Current Blower Box 2');
+                const valCur2 = rawCur2 !== null ? parseNum(rawCur2) : 2.05;
+                updateGaugeValue('cur2', isNaN(valCur2) ? 0 : valCur2, 'val-cur2', true);
+
+                // 5. UPPER (Temp) -> ดึงข้อมูลจาก Temp Box 2 ของฝั่ง UPPER
+                const rawTemp1 = findRealtimeValue(data.upperData, 'Temp Box 2');
+                const valTemp1 = rawTemp1 !== null ? parseNum(rawTemp1) : 250;
+                updateGaugeValue('temp1', isNaN(valTemp1) ? 0 : valTemp1, 'val-temp1');
+
+                // 6. LOWER (Temp) -> ดึงข้อมูลจาก Temp Box 3 ของฝั่ง LOWER
+                const rawTemp2 = findRealtimeValue(data.lowerData, 'Temp Box 3');
+                const valTemp2 = rawTemp2 !== null ? parseNum(rawTemp2) : 248;
+                updateGaugeValue('temp2', isNaN(valTemp2) ? 0 : valTemp2, 'val-temp2');
 
                 statusBox.innerHTML = '✅';
             } catch (error) {
