@@ -118,8 +118,9 @@
             display: inline-block;
             transition: background 0.3s, box-shadow 0.3s;
             background-color: #4b5563; /* สีเริ่มต้นเป็นเทาเข้ม */
-            position: absolute; /* กำหนดตำแหน่งสัมพัทธ์กับการ์ดใบที่ 2 */
+            position: absolute; /* ยึดตำแหน่งเทียบกับกล่องภาพครอบ .image-wrapper */
             z-index: 20;
+            transform: translate(-50%, -50%); /* ช่วยให้จุดกึ่งกลางของไฟ LED ตรงกับพิกัดจริงบนภาพพอดี */
         }
         .led-green {
             background-color: #10b981 !important;
@@ -130,15 +131,25 @@
             box-shadow: 0 0 12px #ef4444, 0 0 5px #ef4444;
         }
 
-        /* 🛠️ ส่วนสำหรับตั้งค่าตำแหน่ง 8 จุดด้านบนรูปภาพของการ์ดที่ 2 (สามารถเปลี่ยนค่า px หรือ % ตรงนี้ได้อิสระครับ) */
-        #dot-k3  { top: 100px;  left: 15%; }
-        #dot-k4  { top: 100px;  left: 25%; }
-        #dot-k5  { top: 100px;  left: 35%; }
-        #dot-k6  { top: 100px;  left: 45%; }
-        #dot-k7  { top: 155px;  left: 55%; }
-        #dot-k8  { top: 155px;  left: 65%; }
-        #dot-k9  { top: 155px;  left: 75%; }
-        #dot-k10 { top: 155px;  left: 85%; }
+        /* 🛠️ ปรับกล่องหุ้มรูปภาพให้อยู่ในสัดส่วนจริงของรูป เพื่อป้องกันจุดเลื่อนหลุดเมื่อขยายหน้าจอใหญ่ */
+        .image-wrapper {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            max-height: 90%;
+            max-width: 90%;
+        }
+
+        /* 🛠️ ส่วนตั้งค่าตำแหน่งเป็น % เทียบกับขนาดภาพจริง ไม่ว่ารูปจะยืดหรือหดตามขนาดจอ จุดจะอยู่ที่เดิมบนภาพเสมอ */
+        #dot-k3  { top: 40%;  left: 15%; }
+        #dot-k4  { top: 40%;  left: 25%; }
+        #dot-k5  { top: 40%;  left: 35%; }
+        #dot-k6  { top: 40%;  left: 45%; }
+        #dot-k7  { top: 60%;  left: 55%; }
+        #dot-k8  { top: 60%;  left: 65%; }
+        #dot-k9  { top: 60%;  left: 75%; }
+        #dot-k10 { top: 60%;  left: 85%; }
         
     </style>
 </head>
@@ -219,15 +230,17 @@
                     <img src="cen.png" class="max-h-[90%] max-w-[90%] object-contain">
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
-                    <img src="in.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div id="dot-k3" class="led-dot"></div>
-                    <div id="dot-k4" class="led-dot"></div>
-                    <div id="dot-k5" class="led-dot"></div>
-                    <div id="dot-k6" class="led-dot"></div>
-                    <div id="dot-k7" class="led-dot"></div>
-                    <div id="dot-k8" class="led-dot"></div>
-                    <div id="dot-k9" class="led-dot"></div>
-                    <div id="dot-k10" class="led-dot"></div>
+                    <div class="image-wrapper">
+                        <img src="in.png" class="w-full h-full object-contain">
+                        <div id="dot-k3" class="led-dot"></div>
+                        <div id="dot-k4" class="led-dot"></div>
+                        <div id="dot-k5" class="led-dot"></div>
+                        <div id="dot-k6" class="led-dot"></div>
+                        <div id="dot-k7" class="led-dot"></div>
+                        <div id="dot-k8" class="led-dot"></div>
+                        <div id="dot-k9" class="led-dot"></div>
+                        <div id="dot-k10" class="led-dot"></div>
+                    </div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="out.png" class="max-h-[90%] max-w-[90%] object-contain">
