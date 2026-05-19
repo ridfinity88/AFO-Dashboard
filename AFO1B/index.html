@@ -112,36 +112,35 @@
 
         /* --- สไตล์ของจุดไฟสัญญาณ LED (K3 - K10) แบบมีมิติเรืองแสง --- */
         .led-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             display: inline-block;
             transition: background 0.3s, box-shadow 0.3s;
             background-color: #4b5563; /* สีเริ่มต้นเป็นเทาเข้ม */
+            position: absolute; /* เปลี่ยนเป็น Absolute เพื่อกำหนดพิกัดทีละจุด */
+            z-index: 20;
         }
         .led-green {
             background-color: #10b981 !important;
-            box-shadow: 0 0 10px #10b981, 0 0 4px #10b981;
+            box-shadow: 0 0 12px #10b981, 0 0 5px #10b981;
         }
         .led-red {
             background-color: #ef4444 !important;
-            box-shadow: 0 0 10px #ef4444, 0 0 4px #ef4444;
+            box-shadow: 0 0 12px #ef4444, 0 0 5px #ef4444;
         }
-        /* ชุดจัดระเบียบตำแหน่งเลย์เอาท์ชั่วคราวสำหรับจุดไฟในการ์ดตรงกลาง */
-        .led-holder {
-            position: absolute;
-            bottom: 6px;
-            left: 10px;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            background: rgba(0,0,0,0.6);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 8px;
-            color: #888;
-            border: 1px solid #222;
-        }
+
+        /* 🛠️ ส่วนระบุตำแหน่งแยกทีละจุดอย่างอิสระ (ปรับเปลี่ยนตัวเลข px หรือ % ตรงนี้ได้เลยครับ) */
+        #dot-k3  { top: 15px;  left: 20px; }
+        #dot-k4  { top: 15px;  left: 45px; }
+        #dot-k5  { top: 15px;  left: 70px; }
+        
+        #dot-k6  { top: 20px;  left: 20px; }
+        #dot-k7  { top: 20px;  left: 45px; }
+        #dot-k8  { top: 20px;  left: 70px; }
+        
+        #dot-k9  { bottom: 20px; left: 20px; }
+        #dot-k10 { bottom: 20px; left: 45px; }
     </style>
 </head>
 <body>
@@ -219,26 +218,20 @@
             <div class="grid grid-rows-3 gap-3 h-100 overflow-hidden">
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="cen.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div class="led-holder">
-                        <span>K3:</span><div id="dot-k3" class="led-dot"></div>
-                        <span>K4:</span><div id="dot-k4" class="led-dot"></div>
-                        <span>K5:</span><div id="dot-k5" class="led-dot"></div>
-                    </div>
+                    <div id="dot-k3" class="led-dot"></div>
+                    <div id="dot-k4" class="led-dot"></div>
+                    <div id="dot-k5" class="led-dot"></div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="in.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div class="led-holder">
-                        <span>K6:</span><div id="dot-k6" class="led-dot"></div>
-                        <span>K7:</span><div id="dot-k7" class="led-dot"></div>
-                        <span>K8:</span><div id="dot-k8" class="led-dot"></div>
-                    </div>
+                    <div id="dot-k6" class="led-dot"></div>
+                    <div id="dot-k7" class="led-dot"></div>
+                    <div id="dot-k8" class="led-dot"></div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="out.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div class="led-holder">
-                        <span>K9:</span><div id="dot-k9" class="led-dot"></div>
-                        <span>K10:</span><div id="dot-k10" class="led-dot"></div>
-                    </div>
+                    <div id="dot-k9" class="led-dot"></div>
+                    <div id="dot-k10" class="led-dot"></div>
                 </div>
             </div>
 
@@ -612,7 +605,7 @@
                     tableBottom.innerHTML = htmlBottom;
                 }
 
-                // --- 🛠️ ส่วนที่เพิ่มใหม่: ตรวจสอบสถานะการเชื่อมต่อ K2 และไฟ LED จุด K3-K10 ---
+                // --- ส่วนตรวจสอบสถานะการเชื่อมต่อ K2 และไฟ LED จุด K3-K10 ---
                 if (data && data.connectionStatus) {
                     const k2Val = parseNum(data.connectionStatus.k2);
                     const labelElements = document.querySelectorAll('.status-display');
@@ -645,7 +638,6 @@
                         }
                     }
                 }
-                // -----------------------------------------------------------------------------
 
                 // --- อัปเดตค่าเกจวัด ---
                 const rawHr1 = findRealtimeValue(data.upperData, 'Burner Time');
@@ -679,7 +671,7 @@
             }
         }
 
-        // 🛠️ ปรับให้ระบบอัปเดตเกจเรียกวาดใหม่ได้อย่างสมบูรณ์แบบโดยที่ Pointer วงกลมและอิโมจิไม่หลุดหาย
+        // ปรับให้ระบบอัปเดตเกจเรียกวาดใหม่ได้อย่างสมบูรณ์แบบโดยที่ Pointer วงกลมและอิโมจิไม่หลุดหาย
         function updateGaugeValue(key, value, textId, isFloat = false) {
             document.getElementById(textId).innerText = isFloat ? value.toFixed(2) : value;
             if (charts[key]) {
