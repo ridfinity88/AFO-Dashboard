@@ -109,6 +109,24 @@
             text-align: center;
             z-index: 1; /* นำข้อความมาอยู่เหนือเส้นเข็มวัดเพื่อความชัดเจน */
         }
+
+        /* ส่วนแสดงจุดไฟสถานะ LED 8 จุด */
+        .status-dots-container {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            background: #111;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #222;
+            height: 22px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -133,6 +151,17 @@
                     🏠 Home
                 </a>
                 <div class="live-clock" id="clock">00/00/0000 00:00:00</div>
+                <div id="k2Status" class="live-clock text-gray-400">Waiting...</div>
+                <div class="status-dots-container" id="dotsContainer">
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                    <div class="status-dot bg-gray-600"></div>
+                </div>
                 <div id="syncStatus">✅</div>
             </div>
 
@@ -275,7 +304,7 @@
 
     <script>
         const MY_PASS = "1234";
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWHCACtGUg5YKRLKEVNh0wLoK8PikcRusqha2SF7PeM8gj6b6g18-vrSy7XGe2vg2lmg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVZL_iHBDC9WBbjAwJAEKhz83pvsxo-cvGK-E_r45r2yMwGXk9Q0juwjO7sXdI9qXdPQ/exec";
         
         let charts = {};
 
@@ -558,6 +587,36 @@
                     });
                     tableBottom.innerHTML = htmlBottom;
                 }
+
+                // --- ส่วนที่เพิ่มใหม่: อัปเดตสถานะเชื่อมต่อ (K2) และไฟสัญญาณ 8 จุด (K3-K10) ---
+                if (data && data.connectionStatus) {
+                    const k2Val = parseNum(data.connectionStatus.k2);
+                    const k2Element = document.getElementById('k2Status');
+                    
+                    if (k2Val === 1) {
+                        k2Element.innerHTML = '● Status OK';
+                        k2Element.className = 'live-clock text-green-500 font-bold';
+                    } else {
+                        k2Element.innerHTML = 'No Connection';
+                        k2Element.className = 'live-clock text-red-500 font-bold animate-pulse';
+                    }
+
+                    // อัปเดตจุดสี 8 จุด
+                    if (data.connectionStatus.dots && Array.isArray(data.connectionStatus.dots)) {
+                        const dotElements = document.querySelectorAll('#dotsContainer .status-dot');
+                        data.connectionStatus.dots.forEach((dotVal, idx) => {
+                            if (dotElements[idx]) {
+                                const val = parseNum(dotVal);
+                                if (val === 1) {
+                                    dotElements[idx].className = 'status-dot bg-green-500 shadow-[0_0_8px_#10b981]';
+                                } else {
+                                    dotElements[idx].className = 'status-dot bg-red-500 shadow-[0_0_8px_#ef4444]';
+                                }
+                            }
+                        });
+                    }
+                }
+                // ----------------------------------------------------------------------
 
                 // --- อัปเดตค่าเกจวัด ---
                 const rawHr1 = findRealtimeValue(data.upperData, 'Burner Time');
