@@ -118,7 +118,7 @@
             display: inline-block;
             transition: background 0.3s, box-shadow 0.3s;
             background-color: #4b5563; /* สีเริ่มต้นเป็นเทาเข้ม */
-            position: absolute; /* เปลี่ยนเป็น Absolute เพื่อกำหนดพิกัดทีละจุด */
+            position: absolute; /* กำหนดตำแหน่งสัมพัทธ์กับการ์ดใบที่ 2 */
             z-index: 20;
         }
         .led-green {
@@ -130,16 +130,15 @@
             box-shadow: 0 0 12px #ef4444, 0 0 5px #ef4444;
         }
 
-        /* 🛠️ ส่วนระบุตำแหน่งแยกทีละจุดอย่างอิสระ (ปรับเปลี่ยนตัวเลข px หรือ % ตรงนี้ได้เลยครับ) */
-        #dot-k3  { top: 25px;  left: 25px; }
-        #dot-k4  { top: 25px;  left: 45px; }
-        #dot-k5  { top: 25px;  left: 75px; }
-        #dot-k6  { top: 25px;  left: 85px; }
-        
-        #dot-k7  { top: 35px;  left: 25px; }
-        #dot-k8  { top: 35px;  left: 45px; }
-        #dot-k9  { bottom: 35px; left: 75px; }
-        #dot-k10 { bottom: 35px; left: 85px; }
+        /* 🛠️ ส่วนสำหรับตั้งค่าตำแหน่ง 8 จุดด้านบนรูปภาพของการ์ดที่ 2 (สามารถเปลี่ยนค่า px หรือ % ตรงนี้ได้อิสระครับ) */
+        #dot-k3  { top: 15px;  left: 15%; }
+        #dot-k4  { top: 15px;  left: 25%; }
+        #dot-k5  { top: 15px;  left: 35%; }
+        #dot-k6  { top: 15px;  left: 45%; }
+        #dot-k7  { top: 15px;  left: 55%; }
+        #dot-k8  { top: 15px;  left: 65%; }
+        #dot-k9  { top: 15px;  left: 75%; }
+        #dot-k10 { top: 15px;  left: 85%; }
         
     </style>
 </head>
@@ -218,20 +217,20 @@
             <div class="grid grid-rows-3 gap-3 h-100 overflow-hidden">
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="cen.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div id="dot-k3" class="led-dot"></div>
-                    <div id="dot-k4" class="led-dot"></div>
-                    <div id="dot-k5" class="led-dot"></div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="in.png" class="max-h-[90%] max-w-[90%] object-contain">
+                    <div id="dot-k3" class="led-dot"></div>
+                    <div id="dot-k4" class="led-dot"></div>
+                    <div id="dot-k5" class="led-dot"></div>
                     <div id="dot-k6" class="led-dot"></div>
                     <div id="dot-k7" class="led-dot"></div>
                     <div id="dot-k8" class="led-dot"></div>
+                    <div id="dot-k9" class="led-dot"></div>
+                    <div id="dot-k10" class="led-dot"></div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
                     <img src="out.png" class="max-h-[90%] max-w-[90%] object-contain">
-                    <div id="dot-k9" class="led-dot"></div>
-                    <div id="dot-k10" class="led-dot"></div>
                 </div>
             </div>
 
