@@ -110,7 +110,7 @@
             z-index: 1; /* นำข้อความมาอยู่เหนือเส้นเข็มวัดเพื่อความชัดเจน */
         }
 
-        /* --- สไตล์ของจุดไฟสัญญาณ LED (K3 - K12) แบบมีมิติเรืองแสง --- */
+        /* --- สไตล์ของจุดไฟสัญญาณ LED แบบมีมิติเรืองแสง --- */
         .led-dot {
             width: 12px;
             height: 12px;
@@ -151,8 +151,8 @@
         #dot-k8  { top: 63%;  left: 32%; }
         #dot-k9  { top: 63%;  left: 71%; }
         #dot-k10 { top: 63%;  left: 78%; }
-
-        /* 🛠️ แก้ไขเพิ่ม: ล็อกตำแหน่งพิกัดของจุด K11 และ K12 ให้อยู่กับรูปอย่างถาวร (สามารถปรับเปลี่ยน % ได้ตามตำแหน่งจริงบนรูปภาพ) */
+        
+        /* 🛠️ แก้ไข: ปรับค่า % พิกัดเป้าหมายสำหรับจุดไฟสัญญาณ K11 และ K12 เพื่อให้ล็อกติดอยู่บนตัวรูปภาพอย่างถาวร */
         #dot-k11 { top: 85%;  left: 32%; }
         #dot-k12 { top: 85%;  left: 71%; }
         
@@ -340,7 +340,7 @@
 
     <script>
         const MY_PASS = "1234";
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQCrCBJL-OxWhoKIok7QUF563YMjx5uGNQdpNO97Q5iFNLSBWYU6PC2UC2rKdbc85vMA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4J1dfPheny_P_W0VpnmaO_k_Sqk0KS3jdGjI5ZVeNHDiC07AlA5xMuPEtDoMvfZMB/exec";
         
         let charts = {};
 
