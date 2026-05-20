@@ -110,7 +110,7 @@
             z-index: 1; /* นำข้อความมาอยู่เหนือเส้นเข็มวัดเพื่อความชัดเจน */
         }
 
-        /* --- สไตล์ของจุดไฟสัญญาณ LED (K3 - K12) แบบมีมิติเรืองแสง --- */
+        /* --- สไตล์ของจุดไฟสัญญาณ LED แบบมีมิติเรืองแสง --- */
         .led-dot {
             width: 12px;
             height: 12px;
@@ -151,8 +151,8 @@
         #dot-k8  { top: 63%;  left: 32%; }
         #dot-k9  { top: 63%;  left: 71%; }
         #dot-k10 { top: 63%;  left: 78%; }
-
-        /* จัดตำแหน่งเพิ่มเติมสำหรับจุดสี K11 และ K12 */
+        
+        /* เพิ่มตำแหน่งพิกัดเป้าหมายสำหรับจุดไฟสัญญาณตัวใหม่ K11 และ K12 */
         #dot-k11 { top: 85%;  left: 32%; }
         #dot-k12 { top: 85%;  left: 71%; }
         
@@ -485,7 +485,7 @@
                         if (factor > 1) factor = 1; if (factor < 0) factor = 0;
                         const needleAngle = -Math.PI + (factor * Math.PI);
 
-                        // 4. คำน0ณตำแหน่งพิกัดปลายเข็ม (Center ของแนวสเกลสี)
+                        // 4. คำนวณตำแหน่งพิกัดปลายเข็ม (Center ของแนวสเกลสี)
                         const textX = cx + centerR * Math.cos(needleAngle);
                         const textY = cy + centerR * Math.sin(needleAngle);
                         
@@ -624,12 +624,12 @@
                     tableBottom.innerHTML = htmlBottom;
                 }
 
-                // --- ส่วนตรวจสอบสถานะการเชื่อมต่อ K2 และ K13 แยกกลุ่มอย่างอิสระ ---
+                // --- ส่วนตรวจสอบสถานะการเชื่อมต่อ K2, K13 และไฟ LED จุด K3-K12 ---
                 if (data && data.connectionStatus) {
                     const k2Val = parseNum(data.connectionStatus.k2);
                     const k13Val = parseNum(data.connectionStatus.k13);
                     
-                    // 1. อัปเดตสถานะกลุ่ม UPPER DATA ทั้งหมด โดยใช้เงื่อนไข K2
+                    // 1. อัปเดตสถานะของกลุ่มการ์ดฝั่ง UPPER DATA ทั้งหมด (ใช้ K2)
                     const upperLabels = document.querySelectorAll('.status-display-upper');
                     upperLabels.forEach(el => {
                         if (k2Val === 1) {
@@ -641,7 +641,7 @@
                         }
                     });
 
-                    // 2. อัปเดตสถานะกลุ่ม LOWER DATA ทั้งหมด โดยใช้เงื่อนไข K13 แยกเป็นอิสระสมบูรณ์
+                    // 2. อัปเดตสถานะของกลุ่มการ์ดฝั่ง LOWER DATA ทั้งหมดอย่างแยกเป็นอิสระ (ใช้ K13)
                     const lowerLabels = document.querySelectorAll('.status-display-lower');
                     lowerLabels.forEach(el => {
                         if (k13Val === 1) {
@@ -653,7 +653,7 @@
                         }
                     });
 
-                    // อัปเดตสถานะสีของจุดสัญญาณ LED 10 จุด (K3 ถึง K12) แยกอิสระต่อกัน
+                    // อัปเดตสถานะสีของจุดสัญญาณ LED ขยายเพิ่มเป็น 10 จุด (K3 ถึง K12) 
                     if (data.connectionStatus.k3_to_k10 && Array.isArray(data.connectionStatus.k3_to_k10)) {
                         for (let index = 0; index < 10; index++) {
                             const currentTargetId = `dot-k${index + 3}`; // ผลลัพธ์จะได้ไอดีตั้งแต่ dot-k3 จนถึง dot-k12
