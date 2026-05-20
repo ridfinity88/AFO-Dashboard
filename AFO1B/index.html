@@ -156,6 +156,44 @@
         #dot-k11 { top: 8%;  left: 24%; }
         #dot-k12 { top: 8%;  left: 70%; }
         
+        /* --- สไตล์กล่องข้อความสีเหลืองตัวหนังสือดำสำหรับแสดงค่า Temp/Pressure/Current --- */
+        .yellow-value-box {
+            position: absolute;
+            background-color: #facc15; /* สีเหลือง Tailwind (yellow-400) */
+            color: #000000;            /* ตัวหนังสือสีดำ */
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            font-family: monospace;
+            border-radius: 3px;
+            border: none;             /* ไม่มีเส้นขอบ */
+            z-index: 30;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            min-width: 40px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 🛠️ ส่วนตั้งค่าพิกัดตำแหน่งเป็น % ของกล่องสีเหลืองแต่ละกล่องภายในการ์ดกลางล่าง (ปรับแก้ที่นี่ได้เลย) */
+        /* UPPER DATA กลุ่มที่ 1 (7 กล่อง) */
+        #box-u-temp1    { top: 20%; left: 15%; }
+        #box-u-temp2    { top: 20%; left: 25%; }
+        #box-u-temp3    { top: 20%; left: 35%; }
+        #box-u-temp4    { top: 20%; left: 45%; } /* สำหรับ Temp Box 1 (ตัวที่สองตามที่ระบุ) */
+        #box-u-steam    { top: 20%; left: 55%; }
+        #box-u-lpg      { top: 20%; left: 65%; }
+        #box-u-conveyor { top: 20%; left: 75%; }
+
+        /* LOWER DATA กลุ่มที่ 2 (7 กล่อง) */
+        #box-l-temp1    { top: 70%; left: 15%; }
+        #box-l-temp2    { top: 70%; left: 25%; }
+        #box-l-temp3    { top: 70%; left: 35%; }
+        #box-l-temp4    { top: 70%; left: 45%; } /* สำหรับ Temp Box 1 (ตัวที่สองตามที่ระบุ) */
+        #box-l-steam    { top: 70%; left: 55%; }
+        #box-l-lpg      { top: 70%; left: 65%; }
+        #box-l-conveyor { top: 70%; left: 75%; }
+
     </style>
 </head>
 <body>
@@ -250,7 +288,25 @@
                     </div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
-                    <img src="out.png" class="max-h-[90%] max-w-[90%] object-contain">
+                    <div class="image-wrapper">
+                        <img src="out.png" class="w-full h-full object-contain">
+                        
+                        <div id="box-u-temp1" class="yellow-value-box">-</div>
+                        <div id="box-u-temp2" class="yellow-value-box">-</div>
+                        <div id="box-u-temp3" class="yellow-value-box">-</div>
+                        <div id="box-u-temp4" class="yellow-value-box">-</div>
+                        <div id="box-u-steam" class="yellow-value-box">-</div>
+                        <div id="box-u-lpg" class="yellow-value-box">-</div>
+                        <div id="box-u-conveyor" class="yellow-value-box">-</div>
+
+                        <div id="box-l-temp1" class="yellow-value-box">-</div>
+                        <div id="box-l-temp2" class="yellow-value-box">-</div>
+                        <div id="box-l-temp3" class="yellow-value-box">-</div>
+                        <div id="box-l-temp4" class="yellow-value-box">-</div>
+                        <div id="box-l-steam" class="yellow-value-box">-</div>
+                        <div id="box-l-lpg" class="yellow-value-box">-</div>
+                        <div id="box-l-conveyor" class="yellow-value-box">-</div>
+                    </div>
                 </div>
             </div>
 
@@ -591,6 +647,15 @@
                             </tr>`;
                     });
                     tableTop.innerHTML = htmlTop;
+
+                    // 🛠️ ดึงค่าไปใส่ในกล่องสีเหลืองฝั่ง UPPER DATA (เฉพาะตัวเลขเท่านั้น)
+                    document.getElementById('box-u-temp1').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 1') || '-');
+                    document.getElementById('box-u-temp2').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 2') || '-');
+                    document.getElementById('box-u-temp3').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 3') || '-');
+                    document.getElementById('box-u-temp4').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 1') || '-'); // Temp Box 1 ตัวที่สอง
+                    document.getElementById('box-u-steam').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Pressure Steam') || '-');
+                    document.getElementById('box-u-lpg').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Pressure LPG') || '-');
+                    document.getElementById('box-u-conveyor').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Current Conveyor') || '-');
                 }
 
                 // เรนเดอร์ LOWER DATA (ช่อง F2:H13)
@@ -622,6 +687,15 @@
                             </tr>`;
                     });
                     tableBottom.innerHTML = htmlBottom;
+
+                    // 🛠️ ดึงค่าไปใส่ในกล่องสีเหลืองฝั่ง LOWER DATA (เฉพาะตัวเลขเท่านั้น)
+                    document.getElementById('box-l-temp1').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 1') || '-');
+                    document.getElementById('box-l-temp2').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 2') || '-');
+                    document.getElementById('box-l-temp3').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 3') || '-');
+                    document.getElementById('box-l-temp4').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 1') || '-'); // Temp Box 1 ตัวที่สอง
+                    document.getElementById('box-l-steam').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Pressure Steam') || '-');
+                    document.getElementById('box-l-lpg').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Pressure LPG') || '-');
+                    document.getElementById('box-l-conveyor').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Current Conveyor') || '-');
                 }
 
                 // --- ส่วนตรวจสอบสถานะการเชื่อมต่อ K2, K13 และไฟ LED จุด K3-K12 ---
