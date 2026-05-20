@@ -110,7 +110,7 @@
             z-index: 1; /* นำข้อความมาอยู่เหนือเส้นเข็มวัดเพื่อความชัดเจน */
         }
 
-        /* --- สไตล์ของจุดไฟสัญญาณ LED (K3 - K12) แบบมีมิติเรืองแสง --- */
+        /* --- สไตล์ของจุดไฟสัญญาณ LED แบบมีมิติเรืองแสง --- */
         .led-dot {
             width: 12px;
             height: 12px;
@@ -142,54 +142,19 @@
         }
 
         /* 🛠️ ส่วนตั้งค่าตำแหน่งเป็น % เทียบกับขนาดภาพจริง ไม่ว่ารูปจะยืดหรือหดตามขนาดจอ จุดจะอยู่ที่เดิมบนภาพเสมอ */
-        #dot-k3  { top: 19%;  left: 25%; }
-        #dot-k4  { top: 19%;  left: 32%; }
-        #dot-k5  { top: 19%;  left: 71%; }
-        #dot-k6  { top: 19%;  left: 78%; }
+        #dot-k3  { top: 23%;  left: 25%; }
+        #dot-k4  { top: 23%;  left: 32%; }
+        #dot-k5  { top: 23%;  left: 71%; }
+        #dot-k6  { top: 23%;  left: 78%; }
         
-        #dot-k7  { top: 63%;  left: 25%; }
-        #dot-k8  { top: 63%;  left: 32%; }
-        #dot-k9  { top: 63%;  left: 71%; }
-        #dot-k10 { top: 63%;  left: 78%; }
-
-        /* 🛠️ ปรับพิกัด K11 และ K12 ให้อยู่กับรูปอย่างถาวรเหมือนตัวอื่น */
-        #dot-k11 { top: 85%;  left: 32%; }
-        #dot-k12 { top: 85%;  left: 71%; }
-
-        /* --- 🛠️ ส่วนเพิ่ม: สไตล์ของกล่องข้อความสีเหลือง 12 กล่องอิสระสำหรับดึงข้อมูลอุณหภูมิและแรงดัน --- */
-        .yellow-data-box {
-            position: absolute;
-            background-color: #facc15; /* สีเหลือง */
-            color: #000000; /* ตัวหนังสือสีดำ */
-            font-weight: bold;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: none; /* ไม่มีเส้นขอบ */
-            z-index: 30;
-            transform: translate(-50%, -50%);
-            white-space: nowrap;
-            min-width: 45px;
-            text-align: center;
-            font-family: monospace;
-        }
-
-        /* 🛠️ จุดระบุตำแหน่งพิกัดเพื่อนำไปปรับแก้ไขตำแหน่งต่อบนรูปภาพ out.png (ปรับแก้ตัวเลข % ได้อิสระที่นี่) */
-        /* กลุ่ม UPPER DATA (6 กล่อง) */
-        #box-u-temp1   { top: 15%; left: 15%; }
-        #box-u-temp2   { top: 15%; left: 30%; }
-        #box-u-temp3   { top: 15%; left: 45%; }
-        #box-u-temp4   { top: 15%; left: 60%; }
-        #box-u-steam   { top: 15%; left: 75%; }
-        #box-u-lpg     { top: 15%; left: 90%; }
-
-        /* กลุ่ม LOWER DATA (6 กล่อง) */
-        #box-l-temp1   { top: 85%; left: 15%; }
-        #box-l-temp2   { top: 85%; left: 30%; }
-        #box-l-temp3   { top: 85%; left: 45%; }
-        #box-l-temp4   { top: 85%; left: 60%; }
-        #box-l-steam   { top: 85%; left: 75%; }
-        #box-l-lpg     { top: 85%; left: 90%; }
+        #dot-k7  { top: 61%;  left: 25%; }
+        #dot-k8  { top: 61%;  left: 32%; }
+        #dot-k9  { top: 61%;  left: 71%; }
+        #dot-k10 { top: 61%;  left: 78%; }
+        
+        /* เพิ่มตำแหน่งพิกัดเป้าหมายสำหรับจุดไฟสัญญาณตัวใหม่ K11 และ K12 */
+        #dot-k11 { top: 8%;  left: 24%; }
+        #dot-k12 { top: 8%;  left: 70%; }
         
     </style>
 </head>
@@ -285,23 +250,7 @@
                     </div>
                 </div>
                 <div class="card flex items-center justify-center overflow-hidden">
-                    <div class="image-wrapper">
-                        <img src="out.png" class="w-full h-full object-contain">
-                        
-                        <div id="box-u-temp1" class="yellow-data-box">-</div>
-                        <div id="box-u-temp2" class="yellow-data-box">-</div>
-                        <div id="box-u-temp3" class="yellow-data-box">-</div>
-                        <div id="box-u-temp4" class="yellow-data-box">-</div>
-                        <div id="box-u-steam" class="yellow-data-box">-</div>
-                        <div id="box-u-lpg" class="yellow-data-box">-</div>
-
-                        <div id="box-l-temp1" class="yellow-data-box">-</div>
-                        <div id="box-l-temp2" class="yellow-data-box">-</div>
-                        <div id="box-l-temp3" class="yellow-data-box">-</div>
-                        <div id="box-l-temp4" class="yellow-data-box">-</div>
-                        <div id="box-l-steam" class="yellow-data-box">-</div>
-                        <div id="box-l-lpg" class="yellow-data-box">-</div>
-                    </div>
+                    <img src="out.png" class="max-h-[90%] max-w-[90%] object-contain">
                 </div>
             </div>
 
@@ -642,14 +591,6 @@
                             </tr>`;
                     });
                     tableTop.innerHTML = htmlTop;
-
-                    /* 🛠️ ดึงและอัปเดตข้อมูลใส่กลุ่มกล่องสีเหลืองฝั่ง UPPER DATA (6 กล่อง) */
-                    document.getElementById('box-u-temp1').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 1') || '0');
-                    document.getElementById('box-u-temp2').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 2') || '0');
-                    document.getElementById('box-u-temp3').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 3') || '0');
-                    document.getElementById('box-u-temp4').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Temp Box 4') || '0');
-                    document.getElementById('box-u-steam').innerText = formatDisplayValue(findRealtimeValue(data.upperData, 'Pressure Steam') || '0');
-                    document.getElementById('box-u-lpg').innerText   = formatDisplayValue(findRealtimeValue(data.upperData, 'Pressure LPG') || '0');
                 }
 
                 // เรนเดอร์ LOWER DATA (ช่อง F2:H13)
@@ -681,14 +622,6 @@
                             </tr>`;
                     });
                     tableBottom.innerHTML = htmlBottom;
-
-                    /* 🛠️ ดึงและอัปเดตข้อมูลใส่กลุ่มกล่องสีเหลืองฝั่ง LOWER DATA (6 กล่อง) */
-                    document.getElementById('box-l-temp1').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 1') || '0');
-                    document.getElementById('box-l-temp2').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 2') || '0');
-                    document.getElementById('box-l-temp3').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 3') || '0');
-                    document.getElementById('box-l-temp4').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Temp Box 4') || '0');
-                    document.getElementById('box-l-steam').innerText = formatDisplayValue(findRealtimeValue(data.lowerData, 'Pressure Steam') || '0');
-                    document.getElementById('box-l-lpg').innerText   = formatDisplayValue(findRealtimeValue(data.lowerData, 'Pressure LPG') || '0');
                 }
 
                 // --- ส่วนตรวจสอบสถานะการเชื่อมต่อ K2, K13 และไฟ LED จุด K3-K12 ---
